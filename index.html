@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RDBMS Lab — CSC2131</title>
+<style>
+  :root{
+    --paper:#F4F6F8; --surface:#FFFFFF; --ink:#17212B; --ink-soft:#4B5563;
+    --accent:#21587D; --accent-soft:#DCE7EF; --accent-2:#B5622A;
+    --line:#C7CDD6;
+    --font-head:Georgia,"Iowan Old Style","Sitka Text",serif;
+    --font-body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#10161D; --surface:#161E27; --ink:#E7EAEE; --ink-soft:#9AA7B4;
+      --accent:#6FA8D6; --accent-soft:#20374A; --accent-2:#E0954F; --line:#2C3844;
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.6; }
+  main{ max-width:640px; margin:0 auto; padding:60px 24px 80px; }
+  .kicker{ font-family:var(--font-body); text-transform:uppercase; letter-spacing:1.2px; font-size:12px; color:var(--accent-2); font-weight:600; margin:0 0 10px; }
+  h1{ font-family:var(--font-head); font-size:32px; margin:0 0 12px; }
+  p.lede{ color:var(--ink-soft); margin:0 0 30px; }
+  .card{ display:block; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:18px 22px; margin-bottom:14px; text-decoration:none; color:var(--ink); }
+  .card:hover{ border-color:var(--accent); }
+  .card .t{ font-weight:700; margin-bottom:4px; }
+  .card .d{ font-size:13.5px; color:var(--ink-soft); }
+</style>
+</head>
+<body>
+<main>
+  <p class="kicker">RDBMS Lab &middot; CSC2131</p>
+  <h1>Course Materials</h1>
+  <p class="lede">Open either page below directly in your browser.</p>
+  <a class="card" href="lab00_handout.html">
+    <div class="t">Lab 00 — Syllabus &amp; Evaluation Hand-out</div>
+    <div class="d">Course structure, evaluation breakdown, and the full lab schedule.</div>
+  </a>
+  <a class="card" href="lab01_er_diagrams.html">
+    <div class="t">Lab 01 — E-R Diagrams</div>
+    <div class="d">Entity-Relationship notation, worked examples, and mapping ER diagrams to relational tables.</div>
+  </a>
+</main>
+</body>
+</html>

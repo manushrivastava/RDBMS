@@ -1,0 +1,356 @@
+<title>RDBMS Lab (CSC2131) — Course Handout</title>
+<style>
+  :root{
+    --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F3;
+    --ink:#17212B; --ink-soft:#4B5563; --ink-faint:#7C8896;
+    --accent:#21587D; --accent-soft:#DCE7EF; --accent-2:#B5622A; --accent-2-soft:#F3E1D3;
+    --line:#C7CDD6; --line-soft:#DDE2E8;
+    --good:#2E7D4F; --good-soft:#DEEEE3;
+    --font-head:Georgia,"Iowan Old Style","Sitka Text",serif;
+    --font-body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:Consolas,"SFMono-Regular","Cascadia Mono","Liberation Mono",ui-monospace,Menlo,monospace;
+    /* chart categorical slots — dataviz skill default order, validated for adjacent-pair (stacked-bar) use */
+    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a; --series-4:#eda100;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#10161D; --surface:#161E27; --surface-2:#1D2733;
+      --ink:#E7EAEE; --ink-soft:#9AA7B4; --ink-faint:#6B7684;
+      --accent:#6FA8D6; --accent-soft:#20374A; --accent-2:#E0954F; --accent-2-soft:#3B2A1C;
+      --line:#2C3844; --line-soft:#232E39;
+      --good:#6FBF8B; --good-soft:#1C3327;
+      --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#10161D; --surface:#161E27; --surface-2:#1D2733;
+    --ink:#E7EAEE; --ink-soft:#9AA7B4; --ink-faint:#6B7684;
+    --accent:#6FA8D6; --accent-soft:#20374A; --accent-2:#E0954F; --accent-2-soft:#3B2A1C;
+    --line:#2C3844; --line-soft:#232E39;
+    --good:#6FBF8B; --good-soft:#1C3327;
+    --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500;
+    color-scheme: dark;
+  }
+  :root[data-theme="light"]{
+    --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F3;
+    --ink:#17212B; --ink-soft:#4B5563; --ink-faint:#7C8896;
+    --accent:#21587D; --accent-soft:#DCE7EF; --accent-2:#B5622A; --accent-2-soft:#F3E1D3;
+    --line:#C7CDD6; --line-soft:#DDE2E8;
+    --good:#2E7D4F; --good-soft:#DEEEE3;
+    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a; --series-4:#eda100;
+    color-scheme: light;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body);
+    font-size:16px; line-height:1.6;
+  }
+  ::selection{ background:var(--accent-2-soft); }
+  a{ color:var(--accent); }
+  :focus-visible{ outline:2px solid var(--accent-2); outline-offset:2px; }
+  code{ font-family:var(--font-mono); background:var(--surface-2); padding:1.5px 6px; border-radius:4px; font-size:.92em; }
+
+  #shell{ display:grid; grid-template-columns:240px 1fr; max-width:1180px; margin:0 auto; }
+  @media (max-width:860px){ #shell{ grid-template-columns:1fr; } #toc{ display:none; } }
+
+  /* ---------- TOC ---------- */
+  #toc{
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    padding:28px 14px 40px 0; border-right:1px solid var(--line-soft);
+  }
+  #toc .brand{ font-family:var(--font-head); font-weight:700; font-size:15px; color:var(--accent); padding:0 14px 14px; border-bottom:1px solid var(--line-soft); margin-bottom:10px; }
+  #toc .brand small{ display:block; font-family:var(--font-mono); font-weight:400; font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.4px; margin-top:4px; }
+  #toc nav{ display:flex; flex-direction:column; gap:2px; }
+  #toc a{
+    font-size:12.8px; color:var(--ink-soft); text-decoration:none; padding:6px 14px; border-radius:7px; border-left:2px solid transparent;
+  }
+  #toc a:hover{ background:var(--surface-2); color:var(--ink); }
+  #toc a.active{ background:var(--accent-soft); color:var(--accent); font-weight:600; border-left-color:var(--accent); }
+  #theme-btn{
+    margin:14px 14px 0; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:7px;
+    padding:7px 12px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:6px; font-family:var(--font-body);
+  }
+
+  /* ---------- Main ---------- */
+  main{ padding:40px 48px 100px; max-width:840px; }
+  @media (max-width:860px){ main{ padding:28px 22px 80px; } }
+
+  .kicker{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:1.2px; font-size:11.5px; color:var(--accent-2); font-weight:600; margin:0 0 10px; }
+  h1{ font-family:var(--font-head); font-size:38px; line-height:1.15; margin:0 0 10px; text-wrap:balance; }
+  .subtitle{ font-size:17px; color:var(--ink-soft); max-width:62ch; margin:0 0 6px; }
+  .rule{ width:64px; height:3px; background:var(--accent-2); margin:22px 0 0; border-radius:2px; }
+
+  section{ margin-top:56px; scroll-margin-top:24px; }
+  h2{ font-family:var(--font-head); font-size:26px; margin:0 0 6px; text-wrap:balance; }
+  h2 .num{ font-family:var(--font-mono); font-size:14px; color:var(--ink-faint); font-weight:400; margin-right:8px; }
+  .section-lede{ font-size:15.5px; color:var(--ink-soft); max-width:65ch; margin:0 0 20px; }
+  h3{ font-family:var(--font-head); font-size:18px; margin:26px 0 10px; }
+
+  /* ---------- Details grid ---------- */
+  .details-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line-soft); border:1px solid var(--line-soft); border-radius:10px; overflow:hidden; margin:18px 0; }
+  @media (max-width:600px){ .details-grid{ grid-template-columns:1fr; } }
+  .details-grid .cell{ background:var(--surface); padding:13px 18px; }
+  .details-grid .cell .k{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-faint); margin-bottom:3px; }
+  .details-grid .cell .v{ font-size:14.5px; font-weight:600; }
+
+  /* ---------- Cards ---------- */
+  .callout{ border-radius:10px; padding:16px 20px; margin:18px 0; border:1px solid var(--line); background:var(--surface); }
+  .callout.accent{ border-color:var(--accent); background:var(--accent-soft); }
+  .callout .tag{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.8px; font-weight:700; color:var(--accent); margin-bottom:6px; }
+  .card-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; margin:18px 0; }
+  .mini-card{ background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:14px 16px; }
+  .mini-card .mc-title{ font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.4px; margin-bottom:5px; }
+  .mini-card .mc-body{ font-size:13px; color:var(--ink-soft); }
+
+  /* ---------- Tables ---------- */
+  .table-wrap{ overflow-x:auto; margin:18px 0; border:1px solid var(--line-soft); border-radius:10px; }
+  table{ width:100%; border-collapse:collapse; font-size:13.8px; }
+  thead th{ text-align:left; padding:11px 16px; background:var(--accent); color:#fff; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; }
+  tbody td{ padding:10px 16px; border-bottom:1px solid var(--line-soft); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:nth-child(even) td{ background:var(--surface-2); }
+  td.num, th.num{ font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+  td.center{ text-align:center; }
+  .lab-topic b{ display:block; }
+  .lab-topic .sub{ color:var(--ink-faint); font-size:12.5px; }
+
+  /* ---------- Assessment chart ---------- */
+  .chart-card{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px 26px; margin:20px 0; }
+  .chart-total{ display:flex; align-items:baseline; gap:10px; margin-bottom:18px; }
+  .chart-total .figure{ font-size:40px; font-weight:700; color:var(--ink); font-variant-numeric:normal; }
+  .chart-total .label{ font-size:13.5px; color:var(--ink-faint); }
+  .stack{ display:flex; width:100%; height:40px; border-radius:8px; overflow:hidden; gap:2px; background:var(--paper); }
+  .stack .seg{ display:flex; align-items:center; justify-content:center; font-family:var(--font-body); font-weight:700; font-size:13px; color:#fff; min-width:0; }
+  .stack .seg span{ padding:0 4px; white-space:nowrap; overflow:hidden; text-overflow:clip; }
+  .legend{ display:flex; flex-wrap:wrap; gap:16px 26px; margin-top:16px; }
+  .legend .item{ display:flex; align-items:center; gap:8px; font-size:13.2px; }
+  .legend .swatch{ width:11px; height:11px; border-radius:3px; flex:none; }
+  .legend .item .lv{ font-weight:700; font-variant-numeric:tabular-nums; }
+  .legend .item .ll{ color:var(--ink-soft); }
+
+  /* ---------- Timeline / week strip ---------- */
+  .flow-note{ font-size:13px; color:var(--ink-faint); margin-top:10px; }
+
+  ul.bullets{ margin:12px 0; padding-left:20px; }
+  ul.bullets li{ margin:6px 0; font-size:14.5px; }
+
+  footer{ margin-top:70px; padding-top:22px; border-top:1px solid var(--line-soft); font-size:12.5px; color:var(--ink-faint); }
+
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+</style>
+
+<div id="shell">
+  <aside id="toc">
+    <div class="brand">RDBMS Lab Handout<small>CSC2131 &middot; Manipal University Jaipur</small></div>
+    <nav id="toc-nav">
+      <a href="#overview">Course at a Glance</a>
+      <a href="#evaluation">How You Are Evaluated</a>
+      <a href="#outcomes">Course Outcomes</a>
+      <a href="#syllabus">Syllabus</a>
+      <a href="#schedule">Week-by-Week Schedule</a>
+      <a href="#beyond">Beyond the Lab</a>
+      <a href="#resources">Textbooks &amp; References</a>
+    </nav>
+    <button id="theme-btn" title="Toggle theme" aria-label="Toggle theme">&#9680; Toggle theme</button>
+  </aside>
+
+  <main>
+    <p class="kicker">Course Hand-out &middot; CSC2131</p>
+    <h1>RDBMS Lab — Syllabus &amp; Evaluation, in Plain Terms</h1>
+    <p class="subtitle">Everything in the official course hand-out that actually changes what you do week to week: how your final mark is built, what each of the twelve labs covers, and what is expected of you outside scheduled hours.</p>
+    <div class="rule"></div>
+
+    <section id="overview">
+      <h2><span class="num">01</span>Course at a Glance</h2>
+      <p class="section-lede">The essentials, straight from the official hand-out.</p>
+      <div class="details-grid">
+        <div class="cell"><div class="k">Course Name</div><div class="v">Relational Database Management Systems</div></div>
+        <div class="cell"><div class="k">Course Code</div><div class="v">CSC2131</div></div>
+        <div class="cell"><div class="k">Programme</div><div class="v">B. Tech. (CSE), Semester III</div></div>
+        <div class="cell"><div class="k">Structure (L-T-P-C)</div><div class="v">0 Lecture &middot; 0 Tutorial &middot; 2 Practical &middot; 1 Credit</div></div>
+        <div class="cell"><div class="k">Session</div><div class="v">July – November 2026</div></div>
+        <div class="cell"><div class="k">Course Coordinators</div><div class="v">Dr. Satyabrata Roy, Dr. Lav Upadhyay</div></div>
+      </div>
+      <div class="callout">
+        <div class="tag">What this course is for</div>
+        <p style="margin:0;font-size:14.5px;">A hands-on lab course in relational database management systems. The aim is to turn you into a working database application developer &mdash; comfortable modeling data, writing SQL confidently, and using procedural extensions like PL/SQL, cursors, and triggers to implement real business logic, not just answer exam questions about them.</p>
+      </div>
+    </section>
+
+    <section id="evaluation">
+      <h2><span class="num">02</span>How You Are Evaluated</h2>
+      <p class="section-lede">Your final mark out of 100 is built from four components. Internal assessment (60 marks total) is entirely under your control through the semester; the End Term Exam (40 marks) is a single closed-book assessment at the end.</p>
+
+      <div class="chart-card">
+        <div class="chart-total"><span class="figure">100</span><span class="label">total marks, split across four components</span></div>
+        <div class="stack" role="img" aria-label="Assessment breakdown: Continuous Evaluation 30, Oracle Certification 10, Lab Project 20, End Term Exam 40">
+          <div class="seg" style="background:var(--series-1); flex:30;"><span>30</span></div>
+          <div class="seg" style="background:var(--series-2); flex:10;"><span>10</span></div>
+          <div class="seg" style="background:var(--series-3); flex:20;"><span>20</span></div>
+          <div class="seg" style="background:var(--series-4); flex:40;"><span>40</span></div>
+        </div>
+        <div class="legend">
+          <div class="item"><span class="swatch" style="background:var(--series-1);"></span><span class="lv">30</span>&nbsp;<span class="ll">Continuous Evaluation (3 evaluations)</span></div>
+          <div class="item"><span class="swatch" style="background:var(--series-2);"></span><span class="lv">10</span>&nbsp;<span class="ll">Oracle Academy Certification</span></div>
+          <div class="item"><span class="swatch" style="background:var(--series-3);"></span><span class="lv">20</span>&nbsp;<span class="ll">Lab Project (two cases)</span></div>
+          <div class="item"><span class="swatch" style="background:var(--series-4);"></span><span class="lv">40</span>&nbsp;<span class="ll">End Term Exam (closed book)</span></div>
+        </div>
+        <p class="flow-note">Internal assessment (Continuous Evaluation + Certification + Lab Project) accounts for 60 of the 100 marks &mdash; more than half your grade is earned before the End Term Exam even happens.</p>
+      </div>
+
+      <h3>Continuous Evaluation — 30 marks</h3>
+      <p style="font-size:14.5px;">Three separate evaluations run across the semester, spaced out to cover different stretches of the syllabus. Each evaluation is worth 10 marks, split three ways:</p>
+      <div class="card-grid">
+        <div class="mini-card"><div class="mc-title">Record</div><div class="mc-body">Your lab record for that session — the queries and observations you documented.</div></div>
+        <div class="mini-card"><div class="mc-title">Execution</div><div class="mc-body">Whether your solution actually runs and produces the correct result on the day.</div></div>
+        <div class="mini-card"><div class="mc-title">Viva</div><div class="mc-body">A short oral check that you understand what you wrote, not just that it works.</div></div>
+      </div>
+      <p class="flow-note">3 evaluations &times; 10 marks each = 30 marks. Missing one costs you a full 10 marks directly &mdash; there is no single large substitute for consistent performance across the semester.</p>
+
+      <h3>Oracle Academy Certification — 10 marks</h3>
+      <p style="font-size:14.5px;">A "Database Programming with SQL" certification through Oracle Academy. This is external, self-paced, and worth completing early rather than leaving until it competes with project deadlines.</p>
+
+      <h3>Lab Project — 20 marks, in two cases</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Case</th><th>What is submitted</th><th class="num">Marks</th></tr></thead>
+          <tbody>
+            <tr><td rowspan="2"><b>Case 1</b></td><td>Project report</td><td class="num">5</td></tr>
+            <tr><td>Live demo</td><td class="num">15</td></tr>
+            <tr><td rowspan="3"><b>Case 2</b></td><td>Project report</td><td class="num">5</td></tr>
+            <tr><td>Project database</td><td class="num">5</td></tr>
+            <tr><td>PL/SQL certification</td><td class="num">10</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>End Term Exam — 40 marks</h3>
+      <p style="font-size:14.5px;">A single closed-book summative assessment covering the full syllabus. This is the only component not distributed across the semester, so it is worth treating the Continuous Evaluation sessions as genuine preparation for it rather than separate, disposable tasks.</p>
+    </section>
+
+    <section id="outcomes">
+      <h2><span class="num">03</span>Course Outcomes</h2>
+      <p class="section-lede">What you should be able to <em>do</em> by the end of the course — each outcome is what a specific stretch of the syllabus is building toward.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:70px;">CO</th><th>By the end of this course, you will be able to&hellip;</th></tr></thead>
+          <tbody>
+            <tr><td><code>CSC2131.1</code></td><td>Construct and model relational databases using Entity-Relationship (ER) diagrams, and apply normalization techniques.</td></tr>
+            <tr><td><code>CSC2131.2</code></td><td>Create a database schema using Data Definition Language (DDL).</td></tr>
+            <tr><td><code>CSC2131.3</code></td><td>Analyse and assess complex queries using Data Manipulation Language.</td></tr>
+            <tr><td><code>CSC2131.4</code></td><td>Apply transaction control commands and manage user privileges for database security and consistency.</td></tr>
+            <tr><td><code>CSC2131.5</code></td><td>Demonstrate application of PL/SQL, cursors, and triggers for developing business logic.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="syllabus">
+      <h2><span class="num">04</span>Syllabus</h2>
+      <p class="section-lede">One continuous arc, from modeling data to writing procedural logic against it.</p>
+      <div class="card-grid">
+        <div class="mini-card"><div class="mc-title">Modeling &amp; Design</div><div class="mc-body">Databases and data modelling, refining the model, ER-to-relational conversion, normalization techniques.</div></div>
+        <div class="mini-card"><div class="mc-title">Schema &amp; Data</div><div class="mc-body">Database schema creation, Data Definition Language (DDL), Data Manipulation Language (DML).</div></div>
+        <div class="mini-card"><div class="mc-title">Querying</div><div class="mc-body">SQL retrieval, aggregate functions, GROUP BY / HAVING, nested queries and subqueries, joins (inner, outer, self), set operations, views, indexing.</div></div>
+        <div class="mini-card"><div class="mc-title">Control &amp; Logic</div><div class="mc-body">Transaction Control Language (TCL), user privileges and access control, PL/SQL procedures, functions, cursors, and triggers.</div></div>
+        <div class="mini-card"><div class="mc-title">Applied &amp; Beyond</div><div class="mc-body">A mini project built with RDBMS tools end to end, plus an introduction to NoSQL as a point of contrast.</div></div>
+      </div>
+    </section>
+
+    <section id="schedule">
+      <h2><span class="num">05</span>Week-by-Week Schedule</h2>
+      <p class="section-lede">Twelve lab sessions, each building directly on the last. Sessions marked with &#9733; are delivered by an industry practitioner rather than the regular course instructor.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:40px;">#</th><th>Topic</th><th style="width:130px;">Related CO</th></tr></thead>
+          <tbody>
+            <tr><td class="center">1</td><td class="lab-topic"><b>ER Diagrams</b><span class="sub">Drawing ER diagrams (ERDplus / Dia); mapping entities, attributes, and keys to a relational model</span></td><td><code>CSC2131.1</code></td></tr>
+            <tr><td class="center">2</td><td class="lab-topic"><b>Introduction to SQL</b><span class="sub">Relational database technology; anatomy of a SQL statement</span></td><td><code>CSC2131.1</code>, <code>.2</code></td></tr>
+            <tr><td class="center">3</td><td class="lab-topic"><b>DDL</b><span class="sub">Creating tables, data types, modifying a table</span></td><td><code>CSC2131.2</code></td></tr>
+            <tr><td class="center">4</td><td class="lab-topic"><b>Constraints</b><span class="sub">NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, CHECK; managing constraints</span></td><td><code>CSC2131.2</code></td></tr>
+            <tr><td class="center">5</td><td class="lab-topic"><b>DML</b><span class="sub">INSERT, UPDATE, DELETE, DEFAULT values, MERGE, multi-table inserts</span></td><td><code>CSC2131.3</code></td></tr>
+            <tr><td class="center">6</td><td class="lab-topic"><b>SELECT &amp; WHERE</b><span class="sub">Columns, rows, limiting results, comparison operators</span></td><td><code>CSC2131.3</code></td></tr>
+            <tr><td class="center">7</td><td class="lab-topic"><b>WHERE, ORDER BY &amp; Functions</b><span class="sub">Logical precedence, sorting, COUNT / DISTINCT / NVL / AVG / MAX / MIN, GROUP BY / HAVING</span></td><td><code>CSC2131.3</code></td></tr>
+            <tr><td class="center">8</td><td class="lab-topic"><b>Joins</b><span class="sub">Cross, natural, inner, self, equijoin, Cartesian product, outer joins</span></td><td><code>CSC2131.3</code></td></tr>
+            <tr><td class="center">9</td><td class="lab-topic"><b>Subqueries</b><span class="sub">Single-row, multiple-row, and correlated subqueries</span></td><td><code>CSC2131.3</code></td></tr>
+            <tr><td class="center">10</td><td class="lab-topic"><b>Views</b><span class="sub">Creating, modifying through, and managing views</span></td><td><code>CSC2131.3</code></td></tr>
+            <tr><td class="center">11 &#9733;</td><td class="lab-topic"><b>Privileges</b><span class="sub">Controlling user access; granting and revoking object privileges</span></td><td><code>CSC2131.4</code></td></tr>
+            <tr><td class="center">12 &#9733;</td><td class="lab-topic"><b>TCL, Triggers &amp; Procedures</b><span class="sub">Rollback, commit, savepoints, triggers, stored procedures, database transactions</span></td><td><code>CSC2131.5</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="flow-note">Every session builds toward one of the three Continuous Evaluations and doubles as direct preparation for the End Term Exam &mdash; there is no separate "exam syllabus" distinct from what the labs already cover.</p>
+    </section>
+
+    <section id="beyond">
+      <h2><span class="num">06</span>Beyond the Lab</h2>
+      <p class="section-lede">Regulatory guidelines require 30 notional hours of engagement per credit outside scheduled sessions. For this 1-credit lab, that is met through activities like these — none of them separately graded, all of them directly useful for the Continuous Evaluation, Certification, and Project components above.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Activity</th><th style="width:110px;">Level</th><th style="width:100px;" class="num">Hours</th></tr></thead>
+          <tbody>
+            <tr><td>Academic clubs, technical competitions, or seminars</td><td>Medium</td><td class="num">10</td></tr>
+            <tr><td>Mini research projects, documentation, or presentations</td><td>High</td><td class="num">6</td></tr>
+            <tr><td>One-on-one remedial sessions, tutorials, or simplified handouts</td><td>Low</td><td class="num">4</td></tr>
+            <tr><td>Visiting labs outside scheduled hours for extended practice</td><td>Medium</td><td class="num">4</td></tr>
+            <tr><td>Online courses, MOOCs, or certifications (Oracle, NPTEL)</td><td>Medium</td><td class="num">2</td></tr>
+            <tr><td>Hackathons or innovation challenges</td><td>High</td><td class="num">2</td></tr>
+            <tr><td>Study circles or peer-assisted learning on SQL / PL-SQL problems</td><td>Medium</td><td class="num">2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="bullets">
+        <li>Struggling with the basics? One-on-one remedial sessions and peer-assisted debugging of DDL/DML queries are explicitly built into the course design &mdash; use them early rather than after a session goes badly.</li>
+        <li>Want to go further? Mini research projects on normalization, indexing, or NoSQL vs. RDBMS, and hackathons involving database design, are the high-difficulty track the hand-out calls out by name.</li>
+      </ul>
+    </section>
+
+    <section id="resources">
+      <h2><span class="num">07</span>Textbooks &amp; References</h2>
+      <h3>Text Books</h3>
+      <ul class="bullets">
+        <li>Silberschatz, Korth, H. F., &amp; Sudarshan, S., <em>Database System Concepts</em>, 7th ed., McGraw Hill Education, 2021.</li>
+        <li>Elmasri, R., &amp; Navathe, S. B., <em>Fundamentals of Database Systems</em>, 7th ed., Pearson Education, 2017.</li>
+      </ul>
+      <h3>Reference Books</h3>
+      <ul class="bullets">
+        <li>Alan Beaulieu, <em>Learning SQL: Generate, Manipulate, and Retrieve Data</em>, 3rd ed. (Greyscale Indian Edition), O'Reilly Media, 2020.</li>
+        <li>Sadalage, P. J., &amp; Fowler, M., <em>NoSQL Distilled: A Brief Guide to the Emerging World of Polyglot Persistence</em>, Addison-Wesley, 2012.</li>
+        <li>I. Bayross, <em>SQL, PL/SQL</em>, 4th ed., BPB Publications, 2025.</li>
+        <li>C. J. Date, <em>Database Systems</em>, Prentice Hall of India, New Delhi, 2022.</li>
+      </ul>
+    </section>
+
+    <footer>Course Hand-out, Department of Computer Science and Engineering, Manipal University Jaipur &middot; CSC2131 &middot; July&ndash;November 2026 session.</footer>
+  </main>
+</div>
+
+<script>
+  (function(){
+    var btn = document.getElementById('theme-btn');
+    btn.addEventListener('click', function(){
+      var root = document.documentElement;
+      var cur = root.getAttribute('data-theme');
+      var sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var effectiveDark = cur ? cur==='dark' : sysDark;
+      root.setAttribute('data-theme', effectiveDark ? 'light' : 'dark');
+    });
+
+    var links = Array.prototype.slice.call(document.querySelectorAll('#toc-nav a'));
+    var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+    function onScroll(){
+      var pos = window.scrollY + 100;
+      var activeIdx = 0;
+      sections.forEach(function(sec, i){
+        if(sec && sec.offsetTop <= pos) activeIdx = i;
+      });
+      links.forEach(function(a, i){ a.classList.toggle('active', i===activeIdx); });
+    }
+    document.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
+  })();
+</script>
