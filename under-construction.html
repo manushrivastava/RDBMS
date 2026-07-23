@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coming Soon — RDBMS</title>
+<style>
+  :root{
+    --paper:#F4F6F8; --surface:#FFFFFF; --ink:#17212B; --ink-soft:#4B5563; --ink-faint:#7C8896;
+    --accent:#21587D; --accent-2:#B5622A; --line:#C7CDD6;
+    --font-head:Georgia,"Iowan Old Style","Sitka Text",serif;
+    --font-body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#10161D; --surface:#161E27; --ink:#E7EAEE; --ink-soft:#9AA7B4; --ink-faint:#6B7684;
+      --accent:#6FA8D6; --accent-2:#E0954F; --line:#2C3844;
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--paper); color:var(--ink); font-family:var(--font-body); text-align:center; }
+  main{ max-width:460px; padding:40px 24px; }
+  .icon{ font-size:44px; margin-bottom:18px; display:block; }
+  h1{ font-family:var(--font-head); font-size:28px; margin:0 0 12px; }
+  p{ color:var(--ink-soft); margin:0 0 28px; }
+  a.back{ display:inline-block; border:1px solid var(--line); border-radius:8px; padding:9px 18px; text-decoration:none; color:var(--ink); font-size:13.5px; font-weight:600; }
+  a.back:hover{ border-color:var(--accent); color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <span class="icon">&#128679;</span>
+  <h1>This page is under construction</h1>
+  <p>This lecture hasn&rsquo;t been uploaded yet &mdash; check back soon.</p>
+  <a class="back" href="javascript:history.back()">&larr; Go back</a>
+</main>
+</body>
+</html>

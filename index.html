@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RDBMS Lab — CSC2131</title>
+<title>RDBMS — Course Materials</title>
 <style>
   :root{
-    --paper:#F4F6F8; --surface:#FFFFFF; --ink:#17212B; --ink-soft:#4B5563;
+    --paper:#F4F6F8; --surface:#FFFFFF; --ink:#17212B; --ink-soft:#4B5563; --ink-faint:#7C8896;
     --accent:#21587D; --accent-soft:#DCE7EF; --accent-2:#B5622A;
     --line:#C7CDD6;
     --font-head:Georgia,"Iowan Old Style","Sitka Text",serif;
@@ -15,36 +15,48 @@
   }
   @media (prefers-color-scheme: dark){
     :root{
-      --paper:#10161D; --surface:#161E27; --ink:#E7EAEE; --ink-soft:#9AA7B4;
+      --paper:#10161D; --surface:#161E27; --ink:#E7EAEE; --ink-soft:#9AA7B4; --ink-faint:#6B7684;
       --accent:#6FA8D6; --accent-soft:#20374A; --accent-2:#E0954F; --line:#2C3844;
       color-scheme: dark;
     }
   }
   *{box-sizing:border-box;}
-  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.6; }
-  main{ max-width:640px; margin:0 auto; padding:60px 24px 80px; }
-  .kicker{ font-family:var(--font-body); text-transform:uppercase; letter-spacing:1.2px; font-size:12px; color:var(--accent-2); font-weight:600; margin:0 0 10px; }
-  h1{ font-family:var(--font-head); font-size:32px; margin:0 0 12px; }
-  p.lede{ color:var(--ink-soft); margin:0 0 30px; }
-  .card{ display:block; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:18px 22px; margin-bottom:14px; text-decoration:none; color:var(--ink); }
-  .card:hover{ border-color:var(--accent); }
-  .card .t{ font-weight:700; margin-bottom:4px; }
-  .card .d{ font-size:13.5px; color:var(--ink-soft); }
+  body{ margin:0; min-height:100vh; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.6; }
+  main{ max-width:760px; margin:0 auto; padding:70px 24px 80px; text-align:center; }
+  .kicker{ font-family:var(--font-body); text-transform:uppercase; letter-spacing:1.4px; font-size:12.5px; color:var(--accent-2); font-weight:600; margin:0 0 12px; }
+  h1{ font-family:var(--font-head); font-size:38px; margin:0 0 14px; }
+  p.lede{ color:var(--ink-soft); max-width:52ch; margin:0 auto 46px; }
+  .choices{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:600px){ .choices{ grid-template-columns:1fr; } }
+  .choice{
+    display:block; background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:34px 24px; text-decoration:none; color:var(--ink); transition:border-color .15s ease, transform .15s ease;
+  }
+  .choice:hover{ border-color:var(--accent); transform:translateY(-2px); }
+  .choice .icon{ font-size:34px; margin-bottom:14px; display:block; }
+  .choice .t{ font-family:var(--font-head); font-size:22px; font-weight:700; margin-bottom:6px; }
+  .choice .d{ font-size:13.5px; color:var(--ink-soft); }
+  footer{ margin-top:56px; font-size:12px; color:var(--ink-faint); }
 </style>
 </head>
 <body>
 <main>
-  <p class="kicker">RDBMS Lab &middot; CSC2131</p>
-  <h1>Course Materials</h1>
-  <p class="lede">Open either page below directly in your browser.</p>
-  <a class="card" href="lab00_handout.html">
-    <div class="t">Lab 00 — Syllabus &amp; Evaluation Hand-out</div>
-    <div class="d">Course structure, evaluation breakdown, and the full lab schedule.</div>
-  </a>
-  <a class="card" href="lab01_er_diagrams.html">
-    <div class="t">Lab 01 — E-R Diagrams</div>
-    <div class="d">Entity-Relationship notation, worked examples, and mapping ER diagrams to relational tables.</div>
-  </a>
+  <p class="kicker">Manipal University Jaipur &middot; Dept. of CSE</p>
+  <h1>Relational Database Management Systems</h1>
+  <p class="lede">Choose a track below to open its course materials.</p>
+  <div class="choices">
+    <a class="choice" href="lab/index.html">
+      <span class="icon">&#128187;</span>
+      <div class="t">Lab</div>
+      <div class="d">Hands-on SQL and database design labs — CSC2131</div>
+    </a>
+    <a class="choice" href="theory/index.html">
+      <span class="icon">&#128218;</span>
+      <div class="t">Theory</div>
+      <div class="d">Lecture decks and concepts — CSC2103</div>
+    </a>
+  </div>
+  <footer>More material is added here as it is prepared for each session.</footer>
 </main>
 </body>
 </html>

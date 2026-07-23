@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RDBMS Theory — CSC2103</title>
+<style>
+  :root{
+    --paper:#F4F6F8; --surface:#FFFFFF; --ink:#17212B; --ink-soft:#4B5563; --ink-faint:#7C8896;
+    --accent:#21587D; --accent-soft:#DCE7EF; --accent-2:#B5622A;
+    --line:#C7CDD6;
+    --font-head:Georgia,"Iowan Old Style","Sitka Text",serif;
+    --font-body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#10161D; --surface:#161E27; --ink:#E7EAEE; --ink-soft:#9AA7B4; --ink-faint:#6B7684;
+      --accent:#6FA8D6; --accent-soft:#20374A; --accent-2:#E0954F; --line:#2C3844;
+      color-scheme: dark;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body); line-height:1.6; }
+  main{ max-width:640px; margin:0 auto; padding:50px 24px 80px; }
+  a.back{ font-size:12.5px; color:var(--ink-faint); text-decoration:none; }
+  a.back:hover{ color:var(--accent); }
+  .kicker{ font-family:var(--font-body); text-transform:uppercase; letter-spacing:1.2px; font-size:12px; color:var(--accent-2); font-weight:600; margin:18px 0 10px; }
+  h1{ font-family:var(--font-head); font-size:32px; margin:0 0 12px; }
+  p.lede{ color:var(--ink-soft); margin:0 0 30px; }
+  .card{ display:block; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:18px 22px; margin-bottom:14px; text-decoration:none; color:var(--ink); }
+  .card:hover{ border-color:var(--accent); }
+  .card .t{ font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+  .card .d{ font-size:13.5px; color:var(--ink-soft); }
+  .tag{ font-family:var(--font-body); font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--ink-faint); border:1px solid var(--line); border-radius:20px; padding:2px 9px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../index.html">&larr; Home</a>
+  <p class="kicker">RDBMS Theory &middot; CSC2103</p>
+  <h1>Theory Lecture Decks</h1>
+  <p class="lede">Each lecture below will be linked here as it is uploaded.</p>
+  <a class="card" href="../under-construction.html">
+    <div class="t">Lec 00 — Course Hand-out <span class="tag">coming soon</span></div>
+    <div class="d">Syllabus, evaluation plan, and lecture schedule.</div>
+  </a>
+  <a class="card" href="../under-construction.html">
+    <div class="t">Lec 01 — Introduction to Databases &amp; the E-R Model <span class="tag">coming soon</span></div>
+    <div class="d">Database concepts, architecture, data independence, and entity-relationship modeling.</div>
+  </a>
+  <a class="card" href="../under-construction.html">
+    <div class="t">Lec 02 — Functional Dependencies &amp; Normalization <span class="tag">coming soon</span></div>
+    <div class="d">Armstrong's axioms, keys, lossless decomposition, and the normal-form ladder.</div>
+  </a>
+  <a class="card" href="../under-construction.html">
+    <div class="t">Lec 03 — Relational Model &amp; Relational Algebra <span class="tag">coming soon</span></div>
+    <div class="d">Schema, keys, relational algebra operations, and joins.</div>
+  </a>
+</main>
+</body>
+</html>
