@@ -689,7 +689,37 @@ const DECK = {
           <li>A STAFF member may be <i>married</i> to one <b>Wife</b> (relationship <b>Married</b>, 1:1).</li>
           <li>A STAFF member may <i>have</i> <b>Child</b>ren (relationship <b>Has</b>). A CHILD record cannot exist without its parent STAFF member, and a child has no company-wide unique ID of its own — so CHILD is a <b>weak entity</b>.</li>
         </ul>
-        <div class="callout tip">This is a widely used textbook figure. On the next slide the same structure is redrawn using the notation legend you just learned, so you can practice reading it in the exact style used throughout this course.</div>
+        <div style="display:flex;flex-direction:column;gap:16px;margin:20px 0;padding:20px;background:var(--panel);border:1px solid var(--border);border-radius:10px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="shape shape-entity">COMPANY</div>
+            <span style="font-size:12px;color:var(--text-dim);font-weight:700;">1</span>
+            <div class="shape shape-relationship"><div class="diamond-bg"></div><span class="shape-label">Work</span></div>
+            <span style="font-size:12px;color:var(--text-dim);font-weight:700;">M</span>
+            <div class="shape shape-entity">STAFF</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="shape shape-entity">Task</div>
+            <span style="font-size:12px;color:var(--text-dim);font-weight:700;">M</span>
+            <div class="shape shape-relationship"><div class="diamond-bg"></div><span class="shape-label">Perform</span></div>
+            <span style="font-size:12px;color:var(--text-dim);font-weight:700;">M</span>
+            <div class="shape shape-entity">STAFF</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="shape shape-entity">STAFF</div>
+            <span style="font-size:12px;color:var(--text-dim);font-weight:700;">1</span>
+            <div class="shape shape-weak-relationship"><div class="diamond-bg2"></div><div class="diamond-bg"></div><span class="shape-label">Has</span></div>
+            <span style="font-size:12px;color:var(--text-dim);font-weight:700;">M</span>
+            <div class="shape shape-weak-entity"><div class="inner">Child</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div class="shape shape-entity">STAFF</div>
+            <span style="font-size:12px;color:var(--text-dim);font-weight:700;">1</span>
+            <div class="shape shape-relationship"><div class="diamond-bg"></div><span class="shape-label">Married</span></div>
+            <span style="font-size:12px;color:var(--text-dim);font-weight:700;">1</span>
+            <div class="shape shape-entity">Wife</div>
+          </div>
+        </div>
+        <div class="callout tip">This simplified view shows only entities and relationships. On the next slide the same structure is redrawn with every attribute added, using the full notation legend you just learned.</div>
       `
     },
     {
