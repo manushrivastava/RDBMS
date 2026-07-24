@@ -1,0 +1,1270 @@
+<title>Introduction to Databases &amp; the Entity-Relationship Model</title>
+<style>
+  :root{
+    --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F3;
+    --ink:#17212B; --ink-soft:#4B5563; --ink-faint:#7C8896;
+    --accent:#21587D; --accent-soft:#DCE7EF; --accent-2:#B5622A; --accent-2-soft:#F3E1D3;
+    --line:#C7CDD6; --line-soft:#DDE2E8;
+    --good:#2E7D4F; --good-soft:#DEEEE3; --bad:#B23A32; --bad-soft:#F5DEDC;
+    --new:#6A3FA0; --new-soft:#E9E0F3;
+    --radius:10px;
+    --font-head:Georgia,"Iowan Old Style","Sitka Text",serif;
+    --font-body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:Consolas,"SFMono-Regular","Cascadia Mono","Liberation Mono",ui-monospace,Menlo,monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#10161D; --surface:#161E27; --surface-2:#1D2733;
+      --ink:#E7EAEE; --ink-soft:#9AA7B4; --ink-faint:#6B7684;
+      --accent:#6FA8D6; --accent-soft:#20374A; --accent-2:#E0954F; --accent-2-soft:#3B2A1C;
+      --line:#2C3844; --line-soft:#232E39;
+      --good:#6FBF8B; --good-soft:#1C3327; --bad:#E4877B; --bad-soft:#3A2220;
+      --new:#B392DD; --new-soft:#2C2338;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#10161D; --surface:#161E27; --surface-2:#1D2733;
+    --ink:#E7EAEE; --ink-soft:#9AA7B4; --ink-faint:#6B7684;
+    --accent:#6FA8D6; --accent-soft:#20374A; --accent-2:#E0954F; --accent-2-soft:#3B2A1C;
+    --line:#2C3844; --line-soft:#232E39;
+    --good:#6FBF8B; --good-soft:#1C3327; --bad:#E4877B; --bad-soft:#3A2220;
+    --new:#B392DD; --new-soft:#2C2338;
+    color-scheme: dark;
+  }
+  :root[data-theme="light"]{
+    --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F3;
+    --ink:#17212B; --ink-soft:#4B5563; --ink-faint:#7C8896;
+    --accent:#21587D; --accent-soft:#DCE7EF; --accent-2:#B5622A; --accent-2-soft:#F3E1D3;
+    --line:#C7CDD6; --line-soft:#DDE2E8;
+    --good:#2E7D4F; --good-soft:#DEEEE3; --bad:#B23A32; --bad-soft:#F5DEDC;
+    --new:#6A3FA0; --new-soft:#E9E0F3;
+    color-scheme: light;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body);
+    font-size:16px; line-height:1.55; overflow:hidden;
+  }
+  ::selection{ background:var(--accent-2-soft); }
+  button{ font-family:inherit; }
+  :focus-visible{ outline:2px solid var(--accent-2); outline-offset:2px; }
+
+  #app{ display:grid; grid-template-columns:auto 1fr; height:100vh; }
+
+  /* ---------- Rail ---------- */
+  #rail{
+    background:var(--surface); border-right:1px solid var(--line-soft);
+    width:230px; padding:18px 12px; overflow-y:auto; display:flex; flex-direction:column; gap:4px;
+  }
+  #rail-brand{
+    font-family:var(--font-head); font-size:15px; font-weight:700; color:var(--accent);
+    padding:4px 10px 14px; border-bottom:1px solid var(--line-soft); margin-bottom:8px;
+    letter-spacing:.2px;
+  }
+  #rail-brand small{ display:block; font-family:var(--font-mono); font-weight:400; font-size:10.5px; color:var(--ink-faint); letter-spacing:.4px; margin-top:3px; text-transform:uppercase; }
+  .rail-phase{ font-family:var(--font-mono); font-size:10px; letter-spacing:.8px; text-transform:uppercase; color:var(--ink-faint); padding:12px 10px 4px; }
+  .rail-item{
+    display:flex; align-items:center; gap:8px; text-align:left; background:none; border:none; cursor:pointer;
+    padding:6px 10px; border-radius:7px; color:var(--ink-soft); font-size:12.5px; line-height:1.3;
+  }
+  .rail-item:hover{ background:var(--surface-2); color:var(--ink); }
+  .rail-item.active{ background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  .rail-dot{ width:6px; height:6px; border-radius:50%; background:var(--line); flex:none; }
+  .rail-item.active .rail-dot{ background:var(--accent); }
+  .rail-item.done .rail-dot{ background:var(--good); }
+
+  /* ---------- Main stage ---------- */
+  #stage-wrap{ position:relative; display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+  #topbar{
+    display:flex; align-items:center; justify-content:space-between; padding:10px 28px;
+    border-bottom:1px solid var(--line-soft); background:var(--paper);
+  }
+  #topbar .count{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); letter-spacing:.4px; }
+  #progress-track{ flex:1; height:3px; background:var(--line-soft); margin:0 18px; border-radius:2px; overflow:hidden; }
+  #progress-fill{ height:100%; background:var(--accent-2); width:0%; transition:width .25s ease; }
+  #theme-btn{
+    border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:7px;
+    width:30px; height:30px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center;
+  }
+
+  #stage{ flex:1; overflow-y:auto; overflow-x:hidden; padding:38px 48px 90px; scroll-behavior:smooth; }
+  #slide{ max-width:920px; margin:0 auto; min-height:100%; }
+
+  #navbar{
+    position:absolute; bottom:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between;
+    padding:12px 28px; background:linear-gradient(to top, var(--paper) 60%, transparent); pointer-events:none;
+  }
+  #navbar > *{ pointer-events:auto; }
+  .navbtn{
+    font-family:var(--font-body); font-weight:600; font-size:13px; border:1px solid var(--line); background:var(--surface);
+    color:var(--ink); padding:9px 16px; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:6px;
+  }
+  .navbtn:hover{ border-color:var(--accent); color:var(--accent); }
+  .navbtn:disabled{ opacity:.35; cursor:default; }
+  .navbtn:disabled:hover{ border-color:var(--line); color:var(--ink); }
+  .navbtn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .navbtn.primary:hover{ opacity:.92; color:#fff; }
+  #navhint{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); }
+
+  /* ---------- Kickers / headings ---------- */
+  .eyebrow{
+    font-family:var(--font-mono); text-transform:uppercase; letter-spacing:1.2px; font-size:11.5px;
+    color:var(--accent-2); font-weight:600; margin:0 0 10px;
+  }
+  h1.slide-title{ font-family:var(--font-head); font-size:34px; line-height:1.18; margin:0 0 18px; text-wrap:balance; }
+  h2.sub-title{ font-family:var(--font-head); font-size:21px; margin:30px 0 12px; color:var(--ink); text-wrap:balance; }
+  .lede{ font-size:16.5px; color:var(--ink-soft); max-width:65ch; }
+
+  /* ---------- Title slide ---------- */
+  .title-slide{ display:flex; flex-direction:column; justify-content:center; min-height:78vh; }
+  .title-slide .eyebrow{ font-size:12.5px; }
+  .title-slide h1{ font-family:var(--font-head); font-size:46px; line-height:1.12; margin:0 0 20px; text-wrap:balance; }
+  .title-slide .lede{ font-size:18px; max-width:60ch; }
+  .title-meta{ display:flex; gap:26px; margin-top:34px; flex-wrap:wrap; }
+  .title-meta div{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); }
+  .title-meta strong{ display:block; font-family:var(--font-body); font-size:13.5px; color:var(--ink); font-weight:600; margin-bottom:2px; }
+  .title-rule{ width:64px; height:3px; background:var(--accent-2); margin-bottom:22px; border-radius:2px; }
+
+  /* ---------- Section divider ---------- */
+  .section-slide{ display:flex; flex-direction:column; justify-content:center; min-height:78vh; }
+  .section-slide .num{ font-family:var(--font-mono); font-size:64px; color:var(--line); font-weight:700; line-height:1; margin-bottom:8px; }
+  .section-slide .label{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:1.4px; font-size:12.5px; color:var(--accent-2); margin-bottom:10px; }
+  .section-slide h1{ font-family:var(--font-head); font-size:38px; margin:0 0 16px; text-wrap:balance; }
+  .section-slide .blurb{ font-size:16.5px; color:var(--ink-soft); max-width:58ch; }
+  .section-slide .topics{ margin-top:26px; display:flex; flex-wrap:wrap; gap:8px; }
+  .section-slide .topics span{
+    font-family:var(--font-mono); font-size:11.5px; border:1px solid var(--line); border-radius:20px; padding:5px 12px; color:var(--ink-soft);
+  }
+
+  /* ---------- Theory content blocks ---------- */
+  .definition{
+    background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:8px;
+    padding:16px 20px; margin:16px 0;
+  }
+  .definition .tag{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.8px; color:var(--accent); font-weight:700; margin-bottom:6px; }
+  .definition p{ margin:6px 0; }
+  .definition code, code{ font-family:var(--font-mono); background:var(--surface-2); padding:1.5px 6px; border-radius:4px; font-size:.92em; }
+
+  .example-box{
+    background:var(--accent-2-soft); border:1px solid var(--accent-2); border-radius:8px; padding:16px 20px; margin:16px 0;
+  }
+  .example-box .tag{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.8px; color:var(--accent-2); font-weight:700; margin-bottom:6px; }
+  .example-box p{ margin:6px 0; }
+
+  .callout{ border-radius:8px; padding:14px 18px; margin:16px 0; border:1px solid var(--line); }
+  .callout.good{ background:var(--good-soft); border-color:var(--good); }
+  .callout.bad{ background:var(--bad-soft); border-color:var(--bad); }
+  .callout .tag{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.8px; font-weight:700; margin-bottom:4px; }
+  .callout.good .tag{ color:var(--good); }
+  .callout.bad .tag{ color:var(--bad); }
+
+  ul.bullets{ margin:12px 0; padding-left:20px; }
+  ul.bullets li{ margin:7px 0; }
+  ol.steps-list{ margin:12px 0; padding-left:22px; }
+  ol.steps-list li{ margin:8px 0; }
+
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:16px 0; }
+  .three-col{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:16px 0; }
+  @media (max-width:760px){ .two-col, .three-col{ grid-template-columns:1fr; } }
+
+  .card-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin:16px 0; }
+  .mini-card{ background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+  .mini-card .mc-title{ font-family:var(--font-mono); font-size:11.5px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
+  .mini-card .mc-body{ font-size:12.8px; color:var(--ink-soft); }
+
+  /* ---------- Flow / arrow notation (reused for FD-style and tier/request flow) ---------- */
+  .fd-row{ display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:15px; margin:8px 0; flex-wrap:wrap; }
+  .fd-set{ display:flex; align-items:center; gap:2px; }
+  .fd-attr{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:6px; padding:3px 9px; font-weight:600;
+  }
+  .fd-arrow{ color:var(--accent-2); font-weight:700; padding:0 3px; }
+  .fd-list{ display:flex; flex-direction:column; gap:6px; margin:14px 0; }
+  .fd-list .fd-row{ background:var(--surface); border:1px solid var(--line-soft); border-radius:7px; padding:8px 14px; }
+
+  /* ---------- Schema / component card (blueprint index-card) ---------- */
+  .rel-card{
+    display:inline-block; min-width:180px; background:var(--surface); border:1.5px solid var(--accent);
+    border-radius:6px; overflow:hidden; margin:6px 8px 6px 0; vertical-align:top;
+  }
+  .rel-card .rel-head{
+    background:var(--accent); color:#fff; font-family:var(--font-mono); font-weight:700; font-size:12.5px;
+    padding:6px 12px; letter-spacing:.3px;
+  }
+  .rel-card .rel-attrs{ padding:8px 12px; font-family:var(--font-mono); font-size:12.5px; display:flex; flex-wrap:wrap; gap:5px; border-bottom:2px double var(--line); }
+  .rel-card .rel-attrs span{ background:var(--surface-2); border-radius:4px; padding:2px 6px; }
+  .rel-card .rel-attrs span.key{ background:var(--accent-2-soft); color:var(--accent-2); font-weight:700; text-decoration:underline; text-underline-offset:2px; }
+  .rel-card .rel-fds{ padding:8px 12px; font-family:var(--font-mono); font-size:11.5px; color:var(--ink-soft); }
+  .rel-card .rel-fds div{ margin:2px 0; }
+  .rel-cluster{ display:flex; flex-wrap:wrap; gap:4px; align-items:flex-start; margin:14px 0; }
+
+  /* ---------- Animation slides ---------- */
+  .given-box{
+    background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:14px 18px; margin-bottom:14px;
+    display:flex; flex-wrap:wrap; gap:22px; align-items:center;
+  }
+  .given-box .gi{ font-size:12.5px; }
+  .given-box .gi b{ display:block; font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-faint); margin-bottom:3px; font-weight:600; }
+  .given-box .gi .val{ font-family:var(--font-mono); font-size:13.5px; color:var(--ink); }
+  .given-box .question{ font-style:italic; color:var(--accent); font-family:var(--font-body); font-size:13.5px; }
+
+  .caption-strip{
+    background:var(--accent-soft); border:1px solid var(--accent); border-radius:9px; padding:13px 18px; margin-bottom:16px;
+    display:flex; gap:12px; align-items:flex-start;
+  }
+  .caption-strip .step-badge{
+    flex:none; width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; font-family:var(--font-mono);
+    font-weight:700; font-size:12px; display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .caption-strip .txt{ font-size:14.5px; color:var(--ink); line-height:1.5; }
+  .caption-strip .txt b{ color:var(--accent); }
+
+  .panels-wrap{ display:flex; flex-wrap:wrap; gap:16px; margin-bottom:10px; }
+  .panel{ background:var(--surface); border:1px solid var(--line); border-radius:9px; overflow:hidden; flex:1 1 260px; min-width:230px; }
+  .panel .panel-title{
+    font-family:var(--font-mono); font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
+    background:var(--surface-2); padding:8px 14px; border-bottom:1px solid var(--line);
+  }
+  table.ptable{ width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:12.8px; }
+  table.ptable th{ text-align:left; padding:7px 12px; background:var(--surface-2); color:var(--ink-soft); font-weight:600; border-bottom:1px solid var(--line); white-space:nowrap; }
+  table.ptable td{ padding:7px 12px; border-bottom:1px solid var(--line-soft); white-space:nowrap; }
+  table.ptable tr:last-child td{ border-bottom:none; }
+  tr.row-good td{ background:var(--good-soft); }
+  tr.row-bad td{ background:var(--bad-soft); }
+  tr.row-new td{ background:var(--new-soft); }
+  tr.row-match td{ background:var(--accent-2-soft); }
+  tr.row-fade td{ opacity:.4; }
+  td.cell-strong{ font-weight:700; }
+  td.tick::before{ content:"✓ "; color:var(--good); font-weight:700; }
+  td.cross::before{ content:"✗ "; color:var(--bad); font-weight:700; }
+
+  .panel .note-body{ padding:14px 16px; font-size:13.5px; }
+  .panel.tone-good{ border-color:var(--good); }
+  .panel.tone-good .panel-title{ background:var(--good-soft); color:var(--good); }
+  .panel.tone-bad{ border-color:var(--bad); }
+  .panel.tone-bad .panel-title{ background:var(--bad-soft); color:var(--bad); }
+  .panel.tone-warn{ border-color:var(--accent-2); }
+  .panel.tone-warn .panel-title{ background:var(--accent-2-soft); color:var(--accent-2); }
+
+  .pill-set{ padding:14px 16px; display:flex; flex-wrap:wrap; gap:7px; }
+  .pill{
+    font-family:var(--font-mono); font-size:12.5px; padding:4px 11px; border-radius:20px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--ink-faint);
+  }
+  .pill.active{ background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+  .pill.newest{ background:var(--accent-2); border-color:var(--accent-2); color:#fff; font-weight:700; }
+  .pill.bad-pill{ background:var(--bad); border-color:var(--bad); color:#fff; font-weight:700; }
+
+  .step-dots{ display:flex; gap:6px; align-items:center; margin:4px 0 18px; flex-wrap:wrap; }
+  .step-dots button{
+    width:9px; height:9px; border-radius:50%; border:none; background:var(--line); cursor:pointer; padding:0;
+  }
+  .step-dots button.active{ background:var(--accent-2); width:22px; border-radius:5px; }
+  .step-controls{ display:flex; align-items:center; gap:10px; margin-bottom:6px; flex-wrap:wrap; }
+  .step-controls .navbtn{ padding:6px 13px; font-size:12.5px; }
+  .step-counter{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); }
+
+  .final-answer{
+    background:var(--good-soft); border:1.5px solid var(--good); border-radius:9px; padding:14px 18px; margin-top:6px;
+    font-size:14.5px; display:none;
+  }
+  .final-answer.show{ display:block; }
+  .final-answer.show.bad-answer{ background:var(--bad-soft); border-color:var(--bad); }
+  .final-answer .tag{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.8px; color:var(--good); font-weight:700; margin-bottom:5px; }
+  .final-answer.bad-answer .tag{ color:var(--bad); }
+
+  /* ---------- Summary table slide ---------- */
+  table.summary{ width:100%; border-collapse:collapse; font-size:13.5px; margin:16px 0; }
+  table.summary th{ text-align:left; padding:9px 14px; background:var(--accent); color:#fff; font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.4px; }
+  table.summary td{ padding:9px 14px; border-bottom:1px solid var(--line-soft); }
+  table.summary tr:nth-child(even) td{ background:var(--surface-2); }
+  table.summary td.yes{ color:var(--good); font-weight:700; }
+  table.summary td.no{ color:var(--bad); font-weight:700; }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; scroll-behavior:auto !important; } }
+
+  #stage::-webkit-scrollbar, #rail::-webkit-scrollbar{ width:9px; }
+  #stage::-webkit-scrollbar-thumb, #rail::-webkit-scrollbar-thumb{ background:var(--line); border-radius:5px; }
+
+  @media (max-width:880px){
+    #rail{ display:none; }
+    #stage{ padding:26px 20px 90px; }
+    .title-slide h1{ font-size:32px; }
+  }
+</style>
+
+<div id="app">
+  <nav id="rail"><div id="rail-brand">Introduction to Databases &amp; the E-R Model<small>RDBMS · CSE2103</small></div><div id="rail-list"></div></nav>
+  <div id="stage-wrap">
+    <div id="topbar">
+      <span class="count" id="phase-label">—</span>
+      <div id="progress-track"><div id="progress-fill"></div></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="count" id="slide-count">1 / 1</span>
+        <button id="theme-btn" title="Toggle theme" aria-label="Toggle theme">◐</button>
+      </div>
+    </div>
+    <div id="stage"><div id="slide"></div></div>
+    <div id="navbar">
+      <button class="navbtn" id="btn-prev">← Prev</button>
+      <span id="navhint">Use ← → or click Next</span>
+      <button class="navbtn primary" id="btn-next">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SLIDES = [
+{ type:'title', kicker:'RDBMS · CSE2103', title:'Introduction to Databases &amp; the Entity-Relationship Model', subtitle:'What a database actually is, why file systems were not enough, how a database system is put together internally, the vocabulary — schema, instance, data independence, data models — used throughout the rest of the course, and the entity-relationship approach used to design a database before a single table is created.',
+  meta:[
+    {k:'Scope', v:'Database Concepts through the E-R Model'},
+    {k:'Format', v:'Topic slides with animated worked scenarios'},
+    {k:'How to move', v:'&larr; &rarr; arrow keys, or the buttons below'}
+  ] },
+
+{ type:'section', title:'What Is a Database?', blurb:'Before any theory, a working definition: what a database is, what a DBMS does for it, and the range of everyday systems already built on one.', topics:['Database &amp; DBMS Defined','Why Data Needs Management','Applications of DBMS'] },
+
+{ type:'theory', eyebrow:'Database Concepts', title:'A Database, Defined', railLabel:'DBMS: Definition', html:`
+<p class="lede">Every application in this course &mdash; a university's student records, a bank's accounts, an online store's orders &mdash; is, underneath, the same kind of object: a large, organized collection of related facts, managed by dedicated software.</p>
+<div class="definition"><div class="tag">Formal definition</div>
+<p>A <b>database</b> is a collection of interrelated data, and a <b>database-management system (DBMS)</b> is a collection of programs that let users store, retrieve, and update that data. Together, a database and the software that manages it form a <b>database system</b>.</p>
+</div>
+<div class="example-box"><div class="tag">Real-life analogy</div>
+<p>Think of a database as a library's entire collection, and the DBMS as the librarian, the catalog system, and the checkout desk combined. A visitor never needs to know which shelf a book physically sits on, or how the catalog is indexed internally &mdash; they ask a question ("do you have this title?") and the system answers it. A database works the same way: applications ask questions, and the DBMS handles finding, protecting, and updating the underlying data.</p>
+</div>
+<h2 class="sub-title">What a DBMS is actually responsible for</h2>
+<ul class="bullets">
+<li><b>Defining structure.</b> Deciding what a piece of data looks like &mdash; a student record, an account balance &mdash; before any of it is stored.</li>
+<li><b>Manipulating data.</b> Letting programs and people insert, search, update, and delete data conveniently and efficiently.</li>
+<li><b>Protecting data.</b> Keeping information safe even if the system crashes mid-operation, or if someone without permission tries to read or change it.</li>
+<li><b>Coordinating sharing.</b> Making sure that when many users update the data at the same time, the result is still correct &mdash; not a scrambled mix of everyone's changes.</li>
+</ul>
+<div class="callout good"><div class="tag">Why this matters today</div><p>Some of the world's most valuable companies own almost no physical assets &mdash; their entire value is the data they hold. A bank without its account records, or a social network without the connections between its users, would be worth almost nothing. Managing that data correctly is not a side concern; for many organizations, it is the business.</p></div>
+` },
+
+{ type:'theory', eyebrow:'Database Concepts', title:'Two Ways Databases Get Used', railLabel:'OLTP vs Analytics', html:`
+<p class="lede">Broadly, an organization's database gets used in two distinct modes, and the distinction matters because each one places very different demands on the system.</p>
+<div class="two-col">
+<div class="definition"><div class="tag">Online Transaction Processing (OLTP)</div>
+<p>A large number of users each retrieve or update a small amount of data, constantly. An ATM withdrawal, a seat booking, a "like" on a post &mdash; each is a small, fast, individually unremarkable operation, but there are millions of them happening every hour. This is the primary mode of use for the vast majority of database applications.</p>
+</div>
+<div class="definition"><div class="tag">Data Analytics</div>
+<p>Instead of many small operations, the database is queried to process large volumes of historical data and draw conclusions from it &mdash; which loan applicants are likely to default, which product a customer is likely to buy next. This mode powers business decisions rather than individual transactions.</p>
+</div>
+</div>
+<p>Both modes run on the same underlying data, which is exactly why a well-designed database matters: the same account table that processes a single withdrawal in milliseconds also has to support a bank analyzing years of transactions for fraud patterns.</p>
+` },
+
+{ type:'theory', eyebrow:'Applications of DBMS', title:'Where Databases Actually Show Up', railLabel:'Applications', html:`
+<p class="lede">Databases are not a specialized tool used by a handful of large companies &mdash; they are the invisible layer behind almost every digital interaction. A single day of ordinary activity touches dozens of them.</p>
+<div class="card-grid">
+<div class="mini-card"><div class="mc-title">Enterprise Information</div><div class="mc-body">Sales, accounting, payroll, and human-resources records for every kind of organization.</div></div>
+<div class="mini-card"><div class="mc-title">Manufacturing</div><div class="mc-body">Supply-chain management, production tracking, and warehouse inventories.</div></div>
+<div class="mini-card"><div class="mc-title">Banking &amp; Finance</div><div class="mc-body">Customer accounts, loans, credit-card transactions, and real-time market data for trading.</div></div>
+<div class="mini-card"><div class="mc-title">Universities</div><div class="mc-body">Student records, course registration, and grades &mdash; the running example used throughout this course.</div></div>
+<div class="mini-card"><div class="mc-title">Airlines</div><div class="mc-body">Reservations and schedules, among the earliest systems to operate across many locations at once.</div></div>
+<div class="mini-card"><div class="mc-title">Telecommunications</div><div class="mc-body">Call and data-usage records, billing, and prepaid balances.</div></div>
+<div class="mini-card"><div class="mc-title">Web-Based Services</div><div class="mc-body">Social-media connections and posts, online retail orders, and the click history behind targeted advertising.</div></div>
+<div class="mini-card"><div class="mc-title">Navigation Systems</div><div class="mc-body">Locations of interest, along with the roads, transit lines, and routes connecting them.</div></div>
+</div>
+<div class="callout good"><div class="tag">The common thread</div><p>Every one of these applications shares the same shape: data that is valuable, too large to hold in memory or track by hand, and accessed by many users or programs at once. That shape is exactly what a DBMS is built to manage &mdash; and it is why the same core ideas covered in this course apply equally to a bank, a university, and a social network.</p></div>
+` },
+
+{ type:'section', title:'File Systems vs. Database Systems', blurb:'Databases were not invented for their own sake. Before them, organizations stored records in plain operating-system files, managed by whatever program happened to need them &mdash; and that approach broke down in specific, predictable ways.', topics:['File-Processing Systems','Redundancy &amp; Inconsistency','Atomicity','Concurrent Access'] },
+
+{ type:'theory', eyebrow:'File Systems', title:'Life Before Databases', railLabel:'File-Processing Systems', html:`
+<p class="lede">Picture a university keeping its records the straightforward way: every department maintains its own set of files on disk, and programmers write a separate application program every time the university needs to do something new with that data &mdash; add a student, register them for a class, compute a GPA.</p>
+<div class="definition"><div class="tag">Formal definition</div>
+<p>A <b>file-processing system</b> stores permanent records in operating-system files, using a collection of application programs that read from and write to those files directly. It is supported by a conventional operating system, with no dedicated layer managing the data as a whole.</p>
+</div>
+<p>This sounds reasonable, and for small, simple needs it works. The trouble starts as the system grows: every new requirement means a new file, a new program, or both &mdash; and nothing coordinates all of these files and programs with each other. Seven specific problems show up reliably once a file-processing system reaches any real scale.</p>
+<table class="summary">
+<thead><tr><th>Problem</th><th>What goes wrong</th></tr></thead>
+<tbody>
+<tr><td>Data redundancy &amp; inconsistency</td><td>The same fact is copied into multiple files, and the copies drift out of agreement.</td></tr>
+<tr><td>Difficulty accessing data</td><td>Answering a question nobody anticipated means waiting for a programmer to write a new program.</td></tr>
+<tr><td>Data isolation</td><td>Data is scattered across files in different formats, making it hard to write programs that pull from several at once.</td></tr>
+<tr><td>Integrity problems</td><td>Rules like "a balance may never go negative" are buried in application code, and easy to miss when new rules are added.</td></tr>
+<tr><td>Atomicity problems</td><td>If a failure happens midway through a multi-step update, the data is left in a half-finished, incorrect state.</td></tr>
+<tr><td>Concurrent-access anomalies</td><td>Two users updating the same record at the same time can silently overwrite each other's work.</td></tr>
+<tr><td>Security problems</td><td>Restricting access to only part of the data is difficult when programs were never designed with that boundary in mind.</td></tr>
+</tbody>
+</table>
+<p>These difficulties, taken together, are exactly what prompted the shift from file-processing systems to database systems. The next three slides animate the three most consequential of them &mdash; redundancy, atomicity, and concurrent access &mdash; in full detail.</p>
+` },
+
+{ type:'animation', eyebrow:'Worked Scenario · Data Redundancy', title:'One Fact, Two Files, Two Different Answers', railLabel:'Redundancy &amp; Inconsistency',
+  intro:'A student with a double major exists in two departments’ records at once &mdash; and a file-processing system has no way to keep those two copies in agreement.',
+  given:{ items:[
+    {label:'Student', value:'S204 &mdash; Asha Verma, double major in Music and Mathematics'},
+    {label:'Setup', value:'Each department keeps its own student file, independently of the other'}
+  ], question:'Asha moves house. What happens to her address on record?' },
+  steps:[
+    { caption:'Because Asha is enrolled in two departments, her name and address exist as two separate copies &mdash; one in the Music department’s file, one in the Mathematics department’s file. Right now, both copies agree.',
+      panels:[
+        { title:'Music dept. file', columns:['Sid','Name','Address'], rows:[
+          {cells:['S204','Asha Verma','12 MG Road, Pune'], cls:'match'}
+        ] },
+        { title:'Mathematics dept. file', columns:['Sid','Name','Address'], rows:[
+          {cells:['S204','Asha Verma','12 MG Road, Pune'], cls:'match'}
+        ] }
+      ] },
+    { caption:'Asha moves house and updates her address at the Music department’s office, since that is the office she deals with most often. The clerk edits the Music file. Nobody informs Mathematics, because nothing in a file-processing system connects the two records &mdash; they are just two separate files that happen to describe the same person.',
+      panels:[
+        { title:'Music dept. file &mdash; updated', columns:['Sid','Name','Address'], rows:[
+          {cells:['S204','Asha Verma','45 Lake View Road, Pune'], cls:'good'}
+        ] },
+        { title:'Mathematics dept. file &mdash; unchanged', columns:['Sid','Name','Address'], rows:[
+          {cells:['S204','Asha Verma','12 MG Road, Pune'], cls:'fade'}
+        ] }
+      ] },
+    { caption:'The two files now disagree about a simple fact: where does Asha live? Whichever office is asked determines the answer a query gets &mdash; and one of those two answers is wrong.',
+      panels:[
+        { title:'Music dept. answers', tone:'good', note:'<p>"45 Lake View Road, Pune"</p>' },
+        { title:'Mathematics dept. answers', tone:'bad', note:'<p>"12 MG Road, Pune" &mdash; out of date</p>' }
+      ],
+      answer:'<b>Data inconsistency.</b> The same real-world fact was stored in two places, only one was updated, and now the database contradicts itself depending on which copy is consulted. A single, shared database would have stored Asha’s address exactly once, so there would be nothing left to disagree.',
+      badAnswer:true }
+  ]
+},
+
+{ type:'animation', eyebrow:'Worked Scenario · Atomicity', title:'A Transfer That Stops Halfway', railLabel:'Atomicity Problem',
+  intro:'Moving money between two accounts takes two separate steps &mdash; and a failure between those steps can make money simply disappear from the records.',
+  given:{ items:[
+    {label:'Operation', value:'Transfer $500 from Account A to Account B'},
+    {label:'Required program logic', value:'Step 1: debit $500 from A. Step 2: credit $500 to B.'}
+  ], question:'What happens if the system crashes between Step 1 and Step 2?' },
+  steps:[
+    { caption:'Before the transfer begins, the two accounts hold a combined total of $1,500. That total must be exactly the same after the transfer completes &mdash; moving money between accounts should never create or destroy any of it.',
+      panels:[
+        { title:'Account A', columns:['Balance'], rows:[ {cells:['$1,000'], cls:'match'} ] },
+        { title:'Account B', columns:['Balance'], rows:[ {cells:['$500'], cls:'match'} ] },
+        { title:'Combined total', tone:'good', note:'<p><b>$1,500</b> &mdash; must stay fixed throughout.</p>' }
+      ] },
+    { caption:'The transfer program executes its first instruction: debit $500 from Account A. This step completes normally and is written to disk.',
+      panels:[
+        { title:'Account A', columns:['Balance'], rows:[ {cells:['$500'], cls:'new'} ] },
+        { title:'Account B', columns:['Balance'], rows:[ {cells:['$500'], cls:'fade'} ] }
+      ] },
+    { caption:'Before the second instruction &mdash; credit $500 to Account B &mdash; can execute, the system crashes: a power failure, a hardware fault, anything that halts execution mid-program. In a plain file-processing system, nothing was tracking that this pair of steps was supposed to be inseparable.',
+      panels:[
+        { title:'Account A', columns:['Balance'], rows:[ {cells:['$500'], cls:'bad'} ] },
+        { title:'Account B — never credited', columns:['Balance'], rows:[ {cells:['$500'], cls:'bad'} ] },
+        { title:'System event', tone:'bad', note:'<p>&#9888; Crash before Step 2 executes.</p>' }
+      ] },
+    { caption:'The system restarts. The debit from Step 1 already happened and was saved; the credit from Step 2 never ran. Nothing in a file-processing system knows the transfer was left half-done.',
+      panels:[
+        { title:'Account A', columns:['Balance'], rows:[ {cells:['$500'], cls:'bad'} ] },
+        { title:'Account B', columns:['Balance'], rows:[ {cells:['$500'], cls:'bad'} ] },
+        { title:'Combined total now', tone:'bad', note:'<p><b>$1,000</b> &mdash; $500 has vanished from the books entirely.</p>' }
+      ],
+      answer:'<b>Atomicity violation.</b> The transfer executed in its entirety, or not at all, was never actually guaranteed &mdash; it just happened to run as two independent steps. A database system’s transaction manager exists specifically to prevent this: either both steps are made permanent, or neither is, with nothing in between.',
+      badAnswer:true }
+  ]
+},
+
+{ type:'animation', eyebrow:'Worked Scenario · Concurrent Access', title:'Two Updates, One Lost', railLabel:'Concurrent-Access Anomaly',
+  intro:'Two everyday scenarios, the same underlying flaw: when two updates read a value before either one writes it back, one of the updates quietly vanishes.',
+  given:{ items:[
+    {label:'Scenario A', value:'Account A holds $10,000. Two clerks withdraw $500 and $100 at almost the same instant.'},
+    {label:'Scenario B', value:'A course has 39 of 40 seats filled. Two students register at almost the same instant.'}
+  ], question:'What ends up stored once both concurrent updates have finished?' },
+  steps:[
+    { caption:'Scenario A begins. Account A currently holds $10,000. Clerk 1 is processing a $500 withdrawal; Clerk 2, working at a different counter, is processing a $100 withdrawal on the very same account &mdash; at almost exactly the same time.',
+      panels:[
+        { title:'Account A (stored balance)', columns:['Balance'], rows:[ {cells:['$10,000'], cls:'match'} ] }
+      ] },
+    { caption:'Both clerks’ programs read the balance before either one writes anything back. Each reads $10,000 &mdash; neither is aware the other is also mid-transaction.',
+      panels:[
+        { title:'Clerk 1’s program', tone:'warn', note:'<p>Reads balance: <b>$10,000</b><br>Plans to withdraw $500</p>' },
+        { title:'Clerk 2’s program', tone:'warn', note:'<p>Reads balance: <b>$10,000</b><br>Plans to withdraw $100</p>' }
+      ] },
+    { caption:'Each program computes the new balance independently, using the value it read: Clerk 1 computes $10,000 &minus; $500 = $9,500. Clerk 2 computes $10,000 &minus; $100 = $9,900. Neither computation accounts for the other withdrawal, because neither program has any way of knowing it is happening.',
+      panels:[
+        { title:'Clerk 1 computes', tone:'warn', note:'<p>$10,000 &minus; $500 = <b>$9,500</b></p>' },
+        { title:'Clerk 2 computes', tone:'warn', note:'<p>$10,000 &minus; $100 = <b>$9,900</b></p>' }
+      ] },
+    { caption:'Clerk 1’s program writes its result first. The stored balance becomes $9,500 &mdash; momentarily correct for a withdrawal of $500 alone.',
+      panels:[
+        { title:'Account A (stored balance)', columns:['Balance'], rows:[ {cells:['$9,500'], cls:'new'} ] }
+      ] },
+    { caption:'A moment later, Clerk 2’s program writes its result &mdash; and overwrites what Clerk 1 just wrote, because Clerk 2’s calculation was based on the old $10,000 figure, not on Clerk 1’s update.',
+      panels:[
+        { title:'Account A (stored balance)', columns:['Balance'], rows:[ {cells:['$9,900'], cls:'bad'} ] },
+        { title:'What it should be', tone:'good', note:'<p>$10,000 &minus; $500 &minus; $100 = <b>$9,400</b></p>' }
+      ],
+      answer:'<b>Lost update.</b> The final stored balance is $9,900, not the correct $9,400 &mdash; Clerk 1’s $500 withdrawal was physically paid out but never durably recorded. $500 is now unaccounted for in the database, even though it left the account in reality.',
+      badAnswer:true },
+    { caption:'Scenario B runs on exactly the same flaw. A course has a 40-seat limit and 39 students already registered. Two more students, working from different browsers, click "Register" within moments of each other.',
+      panels:[
+        { title:'Course registration count', columns:['Registered','Limit'], rows:[ {cells:['39','40'], cls:'match'} ] }
+      ] },
+    { caption:'Both registration programs read the current count &mdash; 39 &mdash; before either writes anything back. Both independently compute 39 + 1 = 40, and since 40 does not exceed the limit of 40, both programs conclude there is room and proceed.',
+      panels:[
+        { title:'Student 1’s program', tone:'warn', note:'<p>Reads count: <b>39</b>. Computes 39+1=40. Room available &mdash; proceeds.</p>' },
+        { title:'Student 2’s program', tone:'warn', note:'<p>Reads count: <b>39</b>. Computes 39+1=40. Room available &mdash; proceeds.</p>' }
+      ] },
+    { caption:'Both programs write 40 back to the database, one after the other &mdash; the second write simply overwrites the first with the identical value.',
+      panels:[
+        { title:'Course registration count', columns:['Registered','Limit'], rows:[ {cells:['40','40'], cls:'bad'} ] },
+        { title:'Students actually enrolled', tone:'bad', note:'<p><b>41</b> &mdash; both registrations went through</p>' }
+      ],
+      answer:'<b>A double failure.</b> The stored count (40) undercounts the true number of registered students (41) &mdash; one increment was lost exactly as in Scenario A. Worse, the 40-seat capacity limit was silently violated, because each program checked the limit against a count that was already out of date the moment it was read.',
+      badAnswer:true }
+  ]
+},
+
+{ type:'section', title:'Database Architecture &amp; Users', blurb:'A database system is not one monolithic program &mdash; it is a set of cooperating components, each with a narrow job, and a set of very differently-skilled people who interact with it through different doors.', topics:['System Structure','Two-Tier vs Three-Tier','Types of Users','The Database Administrator'] },
+
+{ type:'theory', eyebrow:'Database Engine', title:'The Moving Parts Inside a DBMS', railLabel:'Database Engine: Overview', html:`
+<p class="lede">Before tracing a single query through the system, it helps to name the three broad components every database engine is divided into.</p>
+<div class="three-col">
+<div class="definition"><div class="tag">Storage Manager</div><p>The interface between the low-level data sitting on disk and the programs and queries submitted to the system. It moves data between disk and main memory as needed, and enforces authorization and integrity rules.</p></div>
+<div class="definition"><div class="tag">Query Processor</div><p>Translates queries and updates written at a high, human-friendly level into an efficient sequence of low-level operations that the storage manager can carry out.</p></div>
+<div class="definition"><div class="tag">Transaction Management</div><p>Treats a sequence of database operations as one indivisible unit &mdash; ensuring it either happens completely or not at all, even across system failures or many simultaneous users.</p></div>
+</div>
+<p>These three pieces are exactly what make the redundancy, atomicity, and concurrency failures from the previous section preventable: the storage manager centralizes the data instead of scattering it across files, and the transaction manager is precisely the component missing from a plain file-processing system.</p>
+` },
+
+{ type:'animation', eyebrow:'Worked Scenario · System Structure', title:'Tracing One Query Through the System', railLabel:'A Query’s Journey',
+  intro:'A data analyst asks a simple question. Watch every component the request passes through before an answer comes back.',
+  given:{ items:[
+    {label:'User type', value:'Sophisticated user (a data analyst)'},
+    {label:'Request', value:'"Show me every instructor in the Physics department."'}
+  ], question:'What happens between typing the query and seeing the result?' },
+  steps:[
+    { caption:'The analyst is a sophisticated user &mdash; someone who queries the database directly using a query tool, without writing a full application program. They type their request and submit it.',
+      panels:[
+        { title:'User', tone:'warn', note:'<p>Sophisticated user, using a <b>query tool</b>, submits a query.</p>' }
+      ] },
+    { caption:'The query arrives at the query processor as a DML statement, written in a high-level, non-procedural language like SQL &mdash; it says <i>what</i> is wanted, not <i>how</i> to get it.',
+      panels:[
+        { title:'Query processor — received', tone:'warn', note:'<p>DML query: <code>SELECT name FROM instructor WHERE dept_name = "Physics"</code></p>' }
+      ] },
+    { caption:'The DML compiler translates the query into a low-level evaluation plan. Because the same query can usually be answered in several different ways, the compiler also performs query optimization &mdash; picking the cheapest plan among the alternatives.',
+      panels:[
+        { title:'DML compiler', tone:'good', note:'<p>Parses the query, considers alternative evaluation plans, and selects the lowest-cost one.</p>' }
+      ] },
+    { caption:'The query evaluation engine executes the chosen plan. To do that, it needs the actual instructor data &mdash; which does not live in the query processor at all, but on disk, managed by the storage manager.',
+      panels:[
+        { title:'Query evaluation engine', tone:'good', note:'<p>Executes the plan, and requests the needed data from the storage manager.</p>' }
+      ] },
+    { caption:'Inside the storage manager, the authorization and integrity manager first confirms the analyst is permitted to read instructor data. The buffer manager and file manager then locate and fetch the relevant records from disk into main memory.',
+      panels:[
+        { title:'Storage manager', tone:'good', note:'<p><b>Authorization check:</b> passed.<br><b>Buffer &amp; file manager:</b> fetch matching rows from disk.</p>' },
+        { title:'Disk storage', tone:'good', note:'<p>Instructor data, plus the indices used to locate it quickly.</p>' }
+      ] },
+    { caption:'The fetched rows travel back up through the same chain &mdash; storage manager to query evaluation engine to the analyst&rsquo;s query tool &mdash; and are displayed as a result table.',
+      panels:[
+        { title:'Result', tone:'good', columns:['name'], rows:[
+          {cells:['El Said'], cls:'good'},
+          {cells:['Gold'], cls:'good'}
+        ] }
+      ],
+      answer:'<b>One query, five components.</b> The analyst never touched a file, wrote a loop, or knew where the data physically lived &mdash; every one of those details was handled by the query processor and storage manager on their behalf. This is exactly the abstraction a file-processing system never provided.' }
+  ]
+},
+
+{ type:'theory', eyebrow:'Application Architecture', title:'Two-Tier vs. Three-Tier Applications', railLabel:'Two-Tier vs Three-Tier', html:`
+<p class="lede">The previous slide showed the database engine's internals. Zooming out one level: how does the application a user actually touches connect to that engine?</p>
+<div class="two-col">
+<div class="definition"><div class="tag">Two-Tier Architecture</div>
+<p>The application itself runs on the client machine, and talks directly to the database server using query-language statements. This was the model earlier-generation database applications used.</p>
+${fdRow(['User → Application'],['Database System'],{arrow:'&rarr;', note:'client'})}
+</div>
+<div class="definition"><div class="tag">Three-Tier Architecture</div>
+<p>The client machine runs only a front end &mdash; a web browser or mobile app &mdash; with no direct database calls at all. The front end talks to an application server, which holds the business logic and is the only thing that talks to the database.</p>
+${fdRow(['User → Client'],['App Server → Database'],{arrow:'&rarr;', note:'modern web/mobile apps'})}
+</div>
+</div>
+<div class="callout good"><div class="tag">Why three-tier won</div><p>Almost every modern application &mdash; a banking app, an online store, a university portal &mdash; uses three tiers today. Centralizing the business logic in one application server, instead of spreading it across every client, gives both better security (the client never has direct database credentials) and better performance (the server can pool and reuse database connections instead of every client opening its own).</p></div>
+` },
+
+{ type:'theory', eyebrow:'Database Users', title:'Four Kinds of Users, Four Different Doors', railLabel:'Types of Users', html:`
+<p class="lede">Not everyone who touches a database interacts with it the same way. A DBMS provides a different interface for each of four broad categories of user.</p>
+<div class="card-grid">
+<div class="mini-card"><div class="mc-title">Naive Users</div><div class="mc-body">Interact only through predefined forms or applications &mdash; a student registering for a class through a web page never sees a query or a table. This is the largest group by far.</div></div>
+<div class="mini-card"><div class="mc-title">Application Programmers</div><div class="mc-body">Computer professionals who write the application programs that naive users interact with, choosing from a range of development tools to build the interface.</div></div>
+<div class="mini-card"><div class="mc-title">Sophisticated Users</div><div class="mc-body">Interact with the system directly, using a query language or a data-analysis tool, without writing a full program &mdash; an analyst exploring sales trends, for instance.</div></div>
+<div class="mini-card"><div class="mc-title">Database Administrators (DBAs)</div><div class="mc-body">Have central control over both the data and the programs that access it &mdash; the one role responsible for the database as a whole, not just one application built on it.</div></div>
+</div>
+<h2 class="sub-title">What a DBA actually does</h2>
+<ul class="bullets">
+<li><b>Schema definition.</b> Creates the original database schema by writing the data-definition statements.</li>
+<li><b>Storage structure &amp; access-method definition.</b> Specifies how the data is physically organized on disk, and which indices to build.</li>
+<li><b>Schema &amp; physical-organization modification.</b> Adjusts the schema and physical layout as the organization's needs change, or to improve performance.</li>
+<li><b>Granting authorization.</b> Decides which parts of the database each user or role is allowed to access.</li>
+<li><b>Routine maintenance.</b> Backing up the database against disasters, ensuring enough free storage is available, and monitoring performance.</li>
+</ul>
+<div class="example-box"><div class="tag">Real-life analogy</div><p>If naive users are passengers and application programmers are the people who build the airline's booking website, the DBA is closer to air traffic control for the data itself &mdash; nobody books a flight through the DBA directly, but nothing works safely without them managing the underlying system.</p></div>
+` },
+
+{ type:'section', title:'Schema &amp; Instance', blurb:'A database changes constantly as data is inserted, updated, and deleted &mdash; but its overall design does not change nearly as often. Telling these two things apart precisely is one of the most useful habits a database designer can build.', topics:['Schema vs Instance','Physical, Logical &amp; View Schemas'] },
+
+{ type:'theory', eyebrow:'Schema &amp; Instance', title:'The Design vs. the Data Living Inside It', railLabel:'Schema vs Instance: Definition', html:`
+<p class="lede">"The database" can mean two different things depending on context, and mixing them up is a common source of confusion for anyone new to the subject.</p>
+<div class="definition"><div class="tag">Formal definitions</div>
+<p>The <b>schema</b> is the overall design of the database &mdash; the tables that exist, and which columns each one has. The <b>instance</b> is the collection of information actually stored in the database at one particular moment. A database changes its instance constantly; its schema changes rarely, if ever.</p>
+</div>
+<div class="example-box"><div class="tag">Real-life analogy</div>
+<p>A schema is like a blank attendance register printed at the start of the term: it fixes the columns &mdash; Roll Number, Name, Date, Present/Absent &mdash; before a single row is filled in. The instance is whatever is actually written in that register on any given day. The register's printed structure does not change from week to week; the handwriting filling it in does, every single day.</p>
+</div>
+<div class="definition"><div class="tag">Korth's own analogy</div><p>A database schema corresponds to the variable declarations in a program, along with their types. The instance corresponds to the values those variables happen to hold at one moment while the program runs. The declarations stay fixed for the life of the program; the values change constantly as it executes.</p></div>
+<h2 class="sub-title">Several schemas, not just one</h2>
+<p>A database system actually maintains more than one schema, partitioned by level of abstraction:</p>
+<ul class="bullets">
+<li><b>Physical schema.</b> The database design at the physical level &mdash; how data is actually laid out in files on disk.</li>
+<li><b>Logical schema.</b> The design at the logical level &mdash; the tables and columns that application programmers actually work with. This is the one most people mean when they simply say "the schema."</li>
+<li><b>Subschemas.</b> A database may also define several view-level schemas, each showing only part of the full database to a particular class of user.</li>
+</ul>
+` },
+
+{ type:'animation', eyebrow:'Worked Scenario · Schema &amp; Instance', title:'One Schema, Three Snapshots', railLabel:'Schema Fixed, Instance Changing',
+  intro:'A course-registration table, watched across three days. Notice which part of the picture never moves.',
+  given:{ items:[
+    {label:'Table', value:'Enroll(Sid, Cname, Grade)'},
+    {label:'Setting', value:'A university registration system, tracked over three consecutive days'}
+  ], question:'What changes from day to day, and what stays exactly the same?' },
+  steps:[
+    { caption:'Here is the schema for this table &mdash; three columns, with their types fixed: Sid (a student ID), Cname (a course name), and Grade (initially empty until the course finishes). This design was decided once, when the table was created, and everything that follows has to fit inside it.',
+      panels:[
+        { title:'Schema — Enroll(Sid, Cname, Grade)', tone:'warn', note:'<p>Sid: student ID<br>Cname: course name<br>Grade: assigned at term end</p>' }
+      ] },
+    { caption:'Day 1: two students have enrolled so far. This is the instance of the Enroll table at this particular moment &mdash; the actual rows stored right now, fitted into the schema’s three columns.',
+      panels:[
+        { title:'Schema — unchanged', tone:'warn', note:'<p>Sid, Cname, Grade</p>' },
+        { title:'Instance — Day 1', columns:['Sid','Cname','Grade'], rows:[
+          {cells:['S101','DBMS','&mdash;'], cls:'new'},
+          {cells:['S102','DBMS','&mdash;'], cls:'new'}
+        ] }
+      ] },
+    { caption:'Day 2: three more students enroll, one in a different course entirely. The instance has grown &mdash; five rows now instead of two &mdash; but every one of those rows still has exactly the shape the schema defined on day zero. Nobody had to redesign anything to add these rows.',
+      panels:[
+        { title:'Schema — still unchanged', tone:'warn', note:'<p>Sid, Cname, Grade</p>' },
+        { title:'Instance — Day 2', columns:['Sid','Cname','Grade'], rows:[
+          {cells:['S101','DBMS','&mdash;'], cls:'fade'},
+          {cells:['S102','DBMS','&mdash;'], cls:'fade'},
+          {cells:['S103','DBMS','&mdash;'], cls:'new'},
+          {cells:['S104','Networks','&mdash;'], cls:'new'},
+          {cells:['S105','DBMS','&mdash;'], cls:'new'}
+        ] } ]
+    },
+    { caption:'Day 3: the term ends and grades are assigned. Every existing row is updated, not replaced &mdash; the same five (Sid, Cname) pairs now simply carry a value in their third column. The schema still has not moved an inch.',
+      panels:[
+        { title:'Schema — still unchanged', tone:'warn', note:'<p>Sid, Cname, Grade</p>' },
+        { title:'Instance — Day 3', columns:['Sid','Cname','Grade'], rows:[
+          {cells:['S101','DBMS','A'], cls:'new'},
+          {cells:['S102','DBMS','B+'], cls:'new'},
+          {cells:['S103','DBMS','A-'], cls:'new'},
+          {cells:['S104','Networks','B'], cls:'new'},
+          {cells:['S105','DBMS','A'], cls:'new'}
+        ] } ],
+      answer:'<b>One schema, three different instances.</b> Across three days the stored data changed shape, grew, and was edited &mdash; but the schema that defines what a row of Enroll is even allowed to look like never changed once. This is exactly the distinction the formal definitions draw: schema is design, instance is a snapshot in time.' }
+  ]
+},
+
+{ type:'section', title:'Data Independence', blurb:'A database system hides its own complexity from the people using it, by organizing that complexity into levels. Data independence is the guarantee that changing one level does not force a rewrite of everything above it.', topics:['Three Levels of Abstraction','Physical Data Independence','Logical Data Independence','Database Languages &amp; Interfaces'] },
+
+{ type:'theory', eyebrow:'Data Abstraction', title:'Three Levels, Each Hiding the One Below It', railLabel:'Levels of Abstraction', html:`
+<p class="lede">A modern database can involve extremely complex low-level data structures. Almost nobody using the database needs to know about that complexity &mdash; and the system is deliberately organized so they never have to.</p>
+<div class="example-box"><div class="tag">Real-life analogy</div><p>A driver operates a car through a steering wheel, an accelerator, and a brake &mdash; a simple, abstract interface. They do not need to know how the engine converts fuel into motion, or how the transmission delivers power to the wheels, to drive competently. A database provides the exact same kind of abstraction: users and application programmers interact with a simple view of the data, without needing to know how it is physically stored and organized underneath.</p></div>
+<h2 class="sub-title">The three levels</h2>
+<div class="definition"><div class="tag">Physical level</div><p>The lowest level. Describes <i>how</i> the data is actually stored &mdash; complex low-level structures, in detail. Database administrators may need to be aware of this level; almost nobody else does.</p></div>
+<div class="definition"><div class="tag">Logical level</div><p>Describes <i>what</i> data is stored, and what relationships exist among it, using a small number of relatively simple structures &mdash; tables, in the relational model. Programmers work at this level. It hides the physical-level complexity entirely.</p></div>
+<div class="definition"><div class="tag">View level</div><p>The highest level. Most users do not need the entire database &mdash; only some part of it. The view level defines simplified windows onto the logical level, tailored to what a particular user or application actually needs to see.</p></div>
+<div class="callout good"><div class="tag">A concrete illustration</div><p>At the physical level, an <i>instructor</i> record might be a block of consecutive bytes on disk, with a specific byte layout. At the logical level, it is simply a row in an <code>instructor</code> table with named columns: ID, name, dept_name, salary. At the view level, a payroll clerk might see only ID, name, and salary &mdash; department budgets and other tables are hidden from that view entirely, both for simplicity and for security.</p></div>
+<h2 class="sub-title">Two boundaries, two kinds of independence</h2>
+<p>Each boundary between levels gives rise to its own, separate guarantee. Both share the same shape &mdash; a lower level can change without forcing a rewrite above it &mdash; but they differ in how easy that guarantee is to actually deliver.</p>
+<div class="definition"><div class="tag">Physical data independence</div><p>The ability to modify the <b>physical</b> schema without requiring a change to the <b>logical</b> schema. Application programs are said to exhibit physical data independence if they do not depend on the physical schema, and therefore need not be rewritten when it changes. This is the boundary between the physical and logical levels, and it is usually straightforward to achieve &mdash; adding an index or changing a file format rarely touches the tables programmers actually query.</p></div>
+<div class="definition"><div class="tag">Logical data independence</div><p>The ability to modify the <b>logical</b> schema without requiring a change to the view-level schemas or the application programs built on top of them. This is the boundary between the logical and view levels. It is considerably harder to achieve than physical data independence, because application programs are typically written directly against the structure of the logical schema &mdash; adding a new column that nothing depends on is usually safe, but renaming a column or splitting one table into two can break every view and program that assumed the old structure.</p></div>
+<div class="callout good"><div class="tag">Telling them apart quickly</div><p>Ask which level actually changed. A change to <i>how</i> data is stored (indices, file organization, storage medium) tests <b>physical</b> data independence. A change to <i>what</i> is stored (the tables and columns themselves) tests <b>logical</b> data independence.</p></div>
+` },
+
+{ type:'animation', eyebrow:'Worked Scenario · Data Independence', title:'Changing the Foundation Without Shaking the Building', railLabel:'Physical Data Independence',
+  intro:'A database administrator changes how instructor records are physically stored. The steps below trace exactly how far up the three levels that change actually travels.',
+  given:{ items:[
+    {label:'Change', value:'The DBA adds a new index on the instructor table, and switches its storage format to speed up large queries'},
+    {label:'Question', value:'Do application programs built on this table need to be rewritten?'}
+  ], question:'Trace the change through all three levels of abstraction.' },
+  steps:[
+    { caption:'Start with all three levels in their original state, each one built on top of the one below it. An application program at the top only ever talks to the logical level &mdash; it has no direct line to the physical level at all.',
+      panels:[
+        { title:'View level', tone:'good', note:'<p>Payroll clerk’s view: ID, name, salary.</p>' },
+        { title:'Logical level', tone:'good', note:'<p>Table <code>instructor</code>(ID, name, dept_name, salary).</p>' },
+        { title:'Physical level', tone:'good', note:'<p>Fixed-length byte records, one simple unordered file, no index.</p>' }
+      ] },
+    { caption:'The database administrator changes the physical level: a new index is built on the <code>ID</code> column, and the underlying file format is restructured for faster access. This is exactly the kind of decision a DBA makes as part of routine performance tuning.',
+      panels:[
+        { title:'View level', tone:'good', note:'<p>Payroll clerk’s view: ID, name, salary.</p>' },
+        { title:'Logical level', tone:'good', note:'<p>Table <code>instructor</code>(ID, name, dept_name, salary).</p>' },
+        { title:'Physical level — changed', tone:'bad', note:'<p>&#9888; New index added on ID. File format restructured.</p>' }
+      ] },
+    { caption:'Check the logical level: does the <code>instructor</code> table definition need to change because of this? No &mdash; the table still has exactly the same four columns, with the same names and types. The index is a physical-level detail the logical level was never aware of in the first place.',
+      panels:[
+        { title:'Logical level — checked', tone:'good', note:'<p>&#10003; Unaffected. Still <code>instructor</code>(ID, name, dept_name, salary), exactly as before.</p>' }
+      ] },
+    { caption:'Check the view level and every application program built on it: does any query written against the <code>instructor</code> table need to be rewritten? No &mdash; every one of those programs was written against the logical-level table definition, which has not moved.',
+      panels:[
+        { title:'View level — checked', tone:'good', note:'<p>&#10003; Payroll clerk’s view still shows ID, name, salary, unchanged.</p>' },
+        { title:'Application programs — checked', tone:'good', note:'<p>&#10003; Every existing query against <code>instructor</code> still runs, unmodified &mdash; and now runs faster, thanks to the new index.</p>' }
+      ],
+      answer:'<b>Physical data independence, demonstrated.</b> The change stopped completely at the physical level. Formally: application programs are said to exhibit physical data independence if they do not depend on the physical schema, and therefore need not be rewritten if the physical schema changes. That is precisely what just happened &mdash; a real, meaningful change at the bottom, with zero impact felt at the top.<br><br>Contrast this with a change at the <i>logical</i> level instead &mdash; say, splitting the <code>instructor</code> table into two separate tables. That kind of change tests <b>logical</b> data independence rather than physical, and it would not stop so cleanly: the payroll clerk’s view and every existing query would need to be rewritten to match the new table structure, since they were built directly against the old one.' }
+  ]
+},
+
+{ type:'theory', eyebrow:'Database Languages', title:'Talking to a Database — Languages and Interfaces', railLabel:'Database Languages &amp; Interfaces', html:`
+<p class="lede">A database system provides two broad categories of language for interacting with the data it holds, plus a range of interfaces that hide those languages from users who should never have to see them directly.</p>
+<h2 class="sub-title">Two kinds of database language</h2>
+<div class="definition"><div class="tag">Data Definition Language (DDL)</div><p>Used to specify the database schema itself — the tables, their columns, their types, and the constraints on them. Executing a DDL statement changes the metadata that describes the database, not the data inside it. The DDL compiler generates a set of table templates stored in the <b>data dictionary</b>, which every other component of the database consults.</p></div>
+<div class="definition"><div class="tag">Data Manipulation Language (DML)</div><p>Used to express queries and updates on the data governed by a given data model. Also called a <b>query language</b>. There are, broadly, two styles of DML.</p></div>
+<div class="two-col">
+<div class="mini-card"><div class="mc-title">Procedural DML</div><div class="mc-body">Requires the user to specify <i>what</i> data is needed <b>and</b> exactly <i>how</i> to get it, step by step. Relational algebra, covered later in this course, is procedural.</div></div>
+<div class="mini-card"><div class="mc-title">Declarative DML</div><div class="mc-body">Requires the user to specify only <i>what</i> data is needed, without specifying how to retrieve it. SQL, the DML this course uses throughout, is declarative — the system decides how to execute the query.</div></div>
+</div>
+<div class="callout good"><div class="tag">Why "declarative" matters</div><p>Declarative DMLs are usually easier to learn and use than procedural ones, since the user is freed from having to work out an efficient retrieval strategy by hand. That job falls instead to the query optimizer, a component of the database system studied later in this course.</p></div>
+<h2 class="sub-title">Reaching the database without writing DDL or DML by hand</h2>
+<p>Most users of a database system are not expected to know DDL or DML at all. Application developers build interfaces that shield end users from these languages entirely.</p>
+<div class="card-grid">
+<div class="mini-card"><div class="mc-title">Forms-Based Interfaces</div><div class="mc-body">Present a simple form to fill in, with each field mapped internally to an attribute. Suit naive users who need to enter or look up data without knowing a query language exists.</div></div>
+<div class="mini-card"><div class="mc-title">Graphical User Interfaces</div><div class="mc-body">Display a schema visually — boxes and lines — and let a user construct a query by pointing, clicking, and dragging rather than typing.</div></div>
+<div class="mini-card"><div class="mc-title">Natural Language Interfaces</div><div class="mc-body">Accept a request phrased in an ordinary sentence and translate it internally into a query the system can execute.</div></div>
+<div class="mini-card"><div class="mc-title">Application Interfaces</div><div class="mc-body">Web and mobile apps that issue DML statements to the database behind the scenes, through an API, while the user only ever sees buttons and screens.</div></div>
+</div>
+` },
+
+{ type:'section', title:'Data Models', blurb:'Every database is built on top of some data model &mdash; a set of conceptual tools for describing data, the relationships between pieces of data, and the rules that data must obey. Four broad families cover almost everything in use today.', topics:['Relational Model','Entity-Relationship Model','Semi-Structured Model','Object-Based Model'] },
+
+{ type:'theory', eyebrow:'Data Models', title:'Four Ways to Shape Data', railLabel:'The Four Data Models', html:`
+<p class="lede">A data model is the answer to a basic question: once information needs to be stored, what structure does it get poured into? Four categories cover the field.</p>
+
+<div class="definition"><div class="tag">1 &middot; Relational Model</div>
+<p>Uses a collection of tables to represent both the data and the relationships among it. Each table has a fixed set of named columns, and every row of a table has the same structure. Tables are also called <b>relations</b>. This is the most widely used data model, and the one this entire course is built around.</p>
+${relCard('instructor', ['ID','name','dept_name','salary'], ['ID'])}
+</div>
+
+<div class="definition"><div class="tag">2 &middot; Entity-Relationship Model</div>
+<p>Uses a collection of basic objects called <b>entities</b> &mdash; a "thing" or "object" in the real world, distinguishable from every other object &mdash; and <b>relationships</b> among those entities. Widely used specifically for the design phase, before a database is built. A later part of this course explores the E-R model in full detail, including how it converts into a set of relational tables.</p>
+<div class="two-col" style="margin-top:8px;">
+<div class="mini-card"><div class="mc-title">Entity</div><div class="mc-body">Student, Course, Instructor &mdash; a distinguishable "thing."</div></div>
+<div class="mini-card"><div class="mc-title">Relationship</div><div class="mc-body">"Student <i>enrolls in</i> Course" &mdash; a named association between entities.</div></div>
+</div>
+</div>
+
+<div class="definition"><div class="tag">3 &middot; Semi-Structured Data Model</div>
+<p>Permits individual data items of the same general type to have different sets of attributes &mdash; unlike the relational and E-R models, where every item of a given type must share exactly the same structure. JSON and XML are the most widely used semi-structured representations.</p>
+<div class="mini-card" style="max-width:340px;"><div class="mc-title">A JSON record</div><div class="mc-body" style="font-family:var(--font-mono);white-space:pre;">{ "id": 101, "name": "Asha",<br>&nbsp;&nbsp;"majors": ["Music","Math"] }</div></div>
+</div>
+
+<div class="definition"><div class="tag">4 &middot; Object-Based Data Model</div>
+<p>Extends the relational model with the notions of encapsulation, methods, and object identity familiar from object-oriented programming languages such as Java, C++, and C#. Today, the concept of objects is largely integrated into relational databases rather than used as a wholly separate model.</p>
+</div>
+
+<div class="callout good"><div class="tag">Where this course focuses</div><p>A large majority of the material ahead is built on the relational model, since it is the foundation for the great majority of database applications in use today &mdash; including every SQL system this course works with directly.</p></div>
+` },
+
+{ type:'section', title:'The Entity-Relationship Model', blurb:'A high-level, diagrammatic way to design a database before a single table is created — identifying the "things" a system needs to track, and the associations between them, in a form designers and domain experts can agree on together.', topics:['Entities &amp; Entity Sets','Attributes','Relationships &amp; Relationship Sets','Degree &amp; Roles'] },
+
+{ type:'theory', eyebrow:'E-R Model · Entities', title:'Entities, Entity Sets & the E-R Diagram', railLabel:'Entities &amp; Entity Sets', html:`
+<p class="lede">Database design rarely starts with tables. It starts with the entity-relationship (E-R) model — a conceptual framework for identifying, in plain terms, what a database needs to keep track of and how those things relate, before any relational schema is written.</p>
+<div class="definition"><div class="tag">Entity</div><p>A "thing" or "object" in the real world that is distinguishable from every other object. An entity may be concrete, such as a person or a book, or abstract, such as a course, a course offering, or a flight reservation. Every entity has a set of properties, and the values of some subset of those properties must uniquely identify it.</p></div>
+<div class="definition"><div class="tag">Entity Set</div><p>A set of entities of the same type that share the same properties, or <b>attributes</b>. The set of all instructors at a university, for example, is the entity set <code>instructor</code>; the set of all students is the entity set <code>student</code>. Entity sets do not need to be disjoint — a <i>person</i> entity set could overlap with both <i>instructor</i> and <i>student</i>.</p></div>
+<h2 class="sub-title">Representing an entity set in an E-R diagram</h2>
+<p>An entity set is drawn as a <b>rectangle</b>, divided into two parts: the entity set's name at the top, and the list of its attributes below. Attributes that form the primary key are underlined.</p>
+<div class="rel-cluster">
+${relCard('instructor', ['ID','name','dept_name','salary'], ['ID'])}
+${relCard('student', ['ID','name','tot_cred'], ['ID'])}
+</div>
+<div class="callout good"><div class="tag">A database, from the E-R point of view</div><p>A database is simply a collection of entity sets, each holding any number of entities of the same type. A university database might keep dozens of entity sets — instructor, student, course, department, classroom, and more — each with its own attributes, related to one another through relationship sets.</p></div>
+` },
+
+{ type:'theory', eyebrow:'E-R Model · Attributes', title:'Attribute Types — Simple, Composite, Multivalued & Derived', railLabel:'Attributes', html:`
+<p class="lede">Not every attribute is a single, indivisible value. The E-R model recognizes several distinct attribute shapes, and choosing the right one is part of designing a good schema.</p>
+<div class="two-col">
+<div class="definition"><div class="tag">Simple</div><p>Not divided into subparts. <code>ID</code> and <code>salary</code> are simple attributes of <i>instructor</i>.</p></div>
+<div class="definition"><div class="tag">Composite</div><p>Can be divided into smaller subparts, which are themselves attributes. <code>name</code> can be composed of <code>first_name</code>, <code>middle_initial</code>, and <code>last_name</code>; <code>address</code> can be composed of <code>street</code>, <code>city</code>, <code>state</code>, and <code>postal_code</code>, with <code>street</code> itself further divisible into <code>street_number</code>, <code>street_name</code>, and <code>apartment_number</code>.</p></div>
+<div class="definition"><div class="tag">Single-Valued</div><p>Has exactly one value for a given entity. <code>student_ID</code> refers to only one student.</p></div>
+<div class="definition"><div class="tag">Multivalued</div><p>May hold a set of values for a given entity, shown in an E-R diagram inside curly braces. An <i>instructor</i> may have zero, one, or several values for <code>{phone_number}</code>.</p></div>
+</div>
+<div class="definition"><div class="tag">Derived</div><p>Can be computed from the values of other, related attributes or entities, rather than stored directly. An <i>instructor</i>'s <code>age( )</code> can be derived from a stored <code>date_of_birth</code> attribute and the current date; <code>date_of_birth</code> is then called the <b>base</b>, or <b>stored</b>, attribute.</p></div>
+<h2 class="sub-title">All four attribute types together</h2>
+<div class="example-box"><div class="tag">instructor, fully expanded</div><p><code>ID</code> (simple) &middot; <code>name</code> (composite: first_name, middle_initial, last_name) &middot; <code>address</code> (composite, with <code>street</code> itself composite) &middot; <code>{phone_number}</code> (multivalued) &middot; <code>date_of_birth</code> (simple, stored) &middot; <code>age( )</code> (derived)</p></div>
+<div class="callout good"><div class="tag">The null value</div><p>An attribute takes a <b>null</b> value when an entity has no value for it. Null can mean the value genuinely does not apply (a person with no middle name), or that the value is unknown — which itself splits into <i>missing</i> (the value exists, but is not on record) and <i>not known</i> (whether the value exists at all is not on record).</p></div>
+` },
+
+{ type:'theory', eyebrow:'E-R Model · Relationships', title:'Relationships, Relationship Sets, Degree & Roles', railLabel:'Relationships &amp; Degree', html:`
+<p class="lede">Entities on their own only describe isolated "things." A relationship is what connects them into a coherent model of an enterprise.</p>
+<div class="definition"><div class="tag">Relationship</div><p>An association among several entities. For example, the relationship <i>advisor</i> associates instructor Katz with student Shankar — it specifies that Katz is an advisor to Shankar.</p></div>
+<div class="definition"><div class="tag">Relationship Set</div><p>A set of relationships of the same type. Formally, a relationship set is a mathematical relation on n &ge; 2 entity sets: if E1, E2, &hellip;, En are entity sets, a relationship set R is a subset of {(e1, e2, &hellip;, en) | e1 &isin; E1, e2 &isin; E2, &hellip;, en &isin; En}.</p></div>
+<h2 class="sub-title">Representing a relationship set</h2>
+<p>A relationship set is drawn as a <b>diamond</b>, connected by lines to every entity set that participates in it. The entity sets are said to <b>participate</b> in the relationship set.</p>
+<div class="card-grid">
+<div class="mini-card"><div class="mc-title">Degree</div><div class="mc-body">The number of entity sets participating in a relationship set. Most relationship sets in practice are <b>binary</b> (degree 2), like <i>advisor</i>. A <b>ternary</b> relationship set (degree 3) relates three entity sets at once — for example, <i>proj_guide</i> relating <i>instructor</i>, <i>student</i>, and <i>project</i>.</div></div>
+<div class="mini-card"><div class="mc-title">Role</div><div class="mc-body">The function an entity plays in a relationship. Roles are usually implicit and left unnamed — but become necessary when the same entity set participates in a relationship set more than once, in a <b>recursive</b> relationship set.</div></div>
+<div class="mini-card"><div class="mc-title">Descriptive Attribute</div><div class="mc-body">A relationship set may itself carry attributes. The relationship set <i>takes</i>, between <i>student</i> and <i>section</i>, carries a descriptive attribute <code>grade</code> — drawn as an undivided rectangle linked to the diamond with a dashed line.</div></div>
+</div>
+<div class="example-box"><div class="tag">A recursive relationship — prereq</div><p>The entity set <i>course</i> relates to itself through the relationship set <i>prereq</i>, where one course (C2) is a prerequisite for another (C1). Because both roles are filled by the same entity set, explicit role names — <code>course_id</code> and <code>prereq_id</code> — are needed to tell the two participations apart on the connecting lines.</p></div>
+` },
+
+{ type:'animation', eyebrow:'Worked Scenario · Reading a Requirement', title:'From a Plain-English Requirement to an E-R Diagram', railLabel:'Requirement &rarr; E-R Diagram',
+  intro:'Database design almost never starts with a diagram already in hand — it starts with a paragraph of requirements. The steps below trace how that paragraph gets turned into entities, attributes, and relationships.',
+  given:{ items:[
+    {label:'Requirement', value:'"The university must track its instructors and the students each one advises. Every instructor has an ID, a name, and a salary; every student has an ID, a name, and total credits earned. A student may have at most one advisor, but an instructor may advise many students."'}
+  ], question:'Identify the entities, their attributes, and the relationship between them.' },
+  steps:[
+    { caption:'Read the requirement for <b>"things"</b> the enterprise needs to track. Two nouns stand out as distinct, identifiable objects: instructors and students. These become candidate entity sets.',
+      panels:[
+        { title:'Candidate entity sets', tone:'warn', note:'<p><code>instructor</code><br><code>student</code></p>' }
+      ] },
+    { caption:'For each candidate entity set, pull out the properties the requirement explicitly lists. These become its attributes, with whichever property uniquely identifies each entity marked as the primary key.',
+      panels:[
+        { title:'instructor', columns:['Attribute','Role'], rows:[
+          {cells:['ID','Primary key'], cls:'match'},
+          {cells:['name',''], cls:''},
+          {cells:['salary',''], cls:''}
+        ] },
+        { title:'student', columns:['Attribute','Role'], rows:[
+          {cells:['ID','Primary key'], cls:'match'},
+          {cells:['name',''], cls:''},
+          {cells:['tot_cred',''], cls:''}
+        ] }
+      ] },
+    { caption:'Look for a verb or phrase connecting the two entity sets: "each one <b>advises</b>." This becomes a relationship set, drawn as a diamond linking the two entity-set rectangles.',
+      panels:[
+        { title:'Relationship set identified', tone:'good', note:'<p><code>instructor</code> — <b>advisor</b> — <code>student</code></p>' }
+      ] },
+    { caption:'Finally, read the requirement for cardinality language: "at most one advisor" pins down the <i>student</i> side; "may advise many students" pins down the <i>instructor</i> side. Together these fix the mapping cardinality of <i>advisor</i> as one-to-many, from instructor to student.',
+      panels:[
+        { title:'instructor', columns:['Balance'], rows:[ {cells:['Many students per instructor'], cls:'good'} ] },
+        { title:'student', columns:['Balance'], rows:[ {cells:['At most one instructor'], cls:'good'} ] }
+      ],
+      answer:'<b>Two entity sets, one relationship set, fully specified.</b> <code>instructor</code>(ID, name, salary) and <code>student</code>(ID, name, tot_cred), connected by the relationship set <code>advisor</code>, which is one-to-many from instructor to student. This same reading — nouns become entities, their listed properties become attributes, connecting verbs become relationships, and cardinality language fixes the mapping — is exactly how every E-R diagram in this course, and in practice, gets built.' }
+  ]
+},
+
+{ type:'section', title:'Relationship Constraints', blurb:'A relationship set on its own only says two entity sets are connected. Mapping cardinalities and participation constraints say precisely how — how many entities on each side, and whether participation is optional or mandatory.', topics:['Mapping Cardinalities','Participation Constraints','Keys for Relationship Sets','Weak Entity Sets'] },
+
+{ type:'theory', eyebrow:'Relationship Constraints', title:'Mapping Cardinalities — One-to-One Through Many-to-Many', railLabel:'Mapping Cardinalities', html:`
+<p class="lede">Mapping cardinalities, or cardinality ratios, express the number of entities to which another entity can be associated via a relationship set. For a binary relationship set R between entity sets A and B, exactly one of four cases applies.</p>
+<div class="two-col">
+<div class="definition"><div class="tag">One-to-One (1:1)</div><p>An entity in A is associated with at most one entity in B, and an entity in B is associated with at most one entity in A.</p></div>
+<div class="definition"><div class="tag">One-to-Many (1:N)</div><p>An entity in A is associated with any number of entities in B. An entity in B, however, can be associated with at most one entity in A.</p></div>
+<div class="definition"><div class="tag">Many-to-One (N:1)</div><p>An entity in A is associated with at most one entity in B. An entity in B, however, can be associated with any number of entities in A.</p></div>
+<div class="definition"><div class="tag">Many-to-Many (M:N)</div><p>An entity in A is associated with any number of entities in B, and an entity in B is associated with any number of entities in A.</p></div>
+</div>
+<h2 class="sub-title">Notation in an E-R diagram</h2>
+<p>Cardinality is drawn using either a directed line (&rarr;), meaning "at most one," or an undirected line (&mdash;), meaning "any number," between the relationship diamond and each entity set.</p>
+<div class="card-grid">
+<div class="mini-card"><div class="mc-title">1:1</div><div class="mc-body">Directed lines to <i>both</i> entity sets.</div></div>
+<div class="mini-card"><div class="mc-title">1:N</div><div class="mc-body">Directed line to the "one" side, undirected to the "many" side.</div></div>
+<div class="mini-card"><div class="mc-title">N:1</div><div class="mc-body">Undirected line to the "many" side, directed to the "one" side.</div></div>
+<div class="mini-card"><div class="mc-title">M:N</div><div class="mc-body">Undirected lines to <i>both</i> entity sets.</div></div>
+</div>
+<div class="callout good"><div class="tag">The appropriate cardinality depends on the real world, not the diagram</div><p>Whether <i>advisor</i> is one-to-many or many-to-many is a fact about the enterprise being modeled, not a free choice. If a university allows joint advising, <i>advisor</i> is many-to-many; if it insists each student has exactly one advisor, <i>advisor</i> is one-to-many from instructor to student.</p></div>
+` },
+
+{ type:'animation', eyebrow:'Worked Scenario · Mapping Cardinality', title:'Same Relationship Set, Two Different Business Rules', railLabel:'Cardinality: Business Rule &rarr; Diagram',
+  intro:'The same relationship set, advisor between instructor and student, can carry a completely different mapping cardinality depending on one policy decision the university makes.',
+  given:{ items:[
+    {label:'Entity sets', value:'instructor, student'},
+    {label:'Relationship set', value:'advisor'}
+  ], question:'How does the E-R diagram notation change as the business rule changes?' },
+  steps:[
+    { caption:'Policy A: "Students may be advised jointly by several instructors, and an instructor may advise several students." Every entity on both sides can be associated with any number of entities on the other side.',
+      panels:[
+        { title:'Policy A', tone:'warn', note:'<p>Joint advising allowed on both sides.</p>' },
+        { title:'Cardinality', columns:['Side','Constraint'], rows:[
+          {cells:['instructor','Any number of students'], cls:''},
+          {cells:['student','Any number of instructors'], cls:''}
+        ] }
+      ] },
+    { caption:'Read off the mapping cardinality: both sides permit "any number." This is exactly the definition of many-to-many.',
+      panels:[
+        { title:'instructor', tone:'good', note:'<p>&mdash; advisor &mdash; undirected line</p>' },
+        { title:'student', tone:'good', note:'<p>&mdash; advisor &mdash; undirected line</p>' }
+      ],
+      answer:'<b>advisor is Many-to-Many under Policy A.</b> Undirected lines connect the relationship diamond to both instructor and student.' },
+    { caption:'Now the university changes the policy: "A particular university imposes a constraint that a student can be advised by only one instructor, and an instructor can advise several students." Only the student side has tightened.',
+      panels:[
+        { title:'Policy B', tone:'warn', note:'<p>Each student: exactly one instructor. Each instructor: many students.</p>' },
+        { title:'Cardinality', columns:['Side','Constraint'], rows:[
+          {cells:['instructor','Any number of students'], cls:''},
+          {cells:['student','At most one instructor'], cls:'new'}
+        ] }
+      ] },
+    { caption:'Read off the new mapping cardinality: an instructor is associated with any number of students, but a student is associated with at most one instructor. That is a one-to-many relationship, from instructor to student.',
+      panels:[
+        { title:'instructor', tone:'good', note:'<p>&mdash; advisor &mdash; undirected line</p>' },
+        { title:'student', tone:'good', note:'<p>advisor &rarr; directed line</p>' }
+      ],
+      answer:'<b>advisor is One-to-Many under Policy B</b> (instructor to student). The diagram notation changed at exactly one edge — the line into <i>student</i> became directed — because exactly one business rule changed. The relationship set, its name, and the entity sets it connects are all identical between the two policies; only the cardinality constraint differs.' }
+  ]
+},
+
+{ type:'theory', eyebrow:'Relationship Constraints', title:'Participation, Keys & Weak Entity Sets', railLabel:'Participation &amp; Weak Entities', html:`
+<h2 class="sub-title">Participation constraints</h2>
+<div class="two-col">
+<div class="definition"><div class="tag">Total Participation</div><p>Every entity in entity set E must participate in at least one relationship in R. Drawn with a <b>double line</b> in the E-R diagram. A university that requires every student to have an advisor makes <i>student</i>'s participation in <i>advisor</i> total.</p></div>
+<div class="definition"><div class="tag">Partial Participation</div><p>Some entities in E may not participate in any relationship in R at all. Drawn with a single line. An instructor need not advise any students, so <i>instructor</i>'s participation in <i>advisor</i> is typically partial.</p></div>
+</div>
+<div class="example-box"><div class="tag">Cardinality limits — the general notation</div><p>A line may carry an explicit <code>l..h</code> label, where <i>l</i> is the minimum and <i>h</i> the maximum number of relationships an entity participates in. A minimum of 1 means total participation; a maximum of 1 means "at most one"; a maximum of <code>*</code> means no limit. A limit of <code>1..1</code> on the student edge of <i>advisor</i> says every student has exactly one advisor.</p></div>
+<h2 class="sub-title">Keys for entity sets and relationship sets</h2>
+<p>The notions of superkey, candidate key, and primary key apply to entity sets exactly as they apply to relation schemas. Relationship sets need keys too, to distinguish one relationship instance from another.</p>
+<div class="callout good"><div class="tag">Choosing a relationship set's primary key</div><p>The choice depends on the relationship's mapping cardinality. For a <b>many-to-many</b> relationship, the primary key is the union of the primary keys of both participating entity sets. For a <b>one-to-many</b> or <b>many-to-one</b> relationship, the primary key of the "many" side alone suffices. For a <b>one-to-one</b> relationship, the primary key of either participating entity set works.</p></div>
+<h2 class="sub-title">Weak entity sets</h2>
+<div class="definition"><div class="tag">Weak Entity Set</div><p>An entity set whose existence depends on another entity set, called its <b>identifying entity set</b>. Instead of a primary key of its own, a weak entity set uses the primary key of its identifying entity set, together with extra attributes of its own called <b>discriminator attributes</b>, to uniquely identify each weak entity. An entity set that is not weak is called a <b>strong entity set</b>.</p></div>
+<div class="example-box"><div class="tag">section, a weak entity set</div><p>A <i>section</i> entity is identified by a course identifier, semester, year, and section identifier — but the course identifier really belongs to <i>course</i>. <i>section</i> is existence-dependent on <i>course</i>, related to it through the identifying relationship <code>sec_course</code>, which is many-to-one toward <i>course</i> with total participation from <i>section</i>. In an E-R diagram, a weak entity set is drawn as a <b>double rectangle</b>, its identifying relationship as a <b>double diamond</b>, and its discriminator is underlined with a dashed line rather than a solid one.</p></div>
+` },
+
+{ type:'section', title:'Generalization, Specialization & Aggregation', blurb:'Three extensions to the basic E-R model, for situations the rectangle-and-diamond vocabulary alone cannot express cleanly: entities that come in distinguishable subtypes, and relationships that themselves need to participate in further relationships.', topics:['Specialization &amp; Generalization','Attribute Inheritance','Disjoint &amp; Overlapping','Aggregation'] },
+
+{ type:'theory', eyebrow:'Extended E-R Features', title:'Specialization & Generalization', railLabel:'Specialization &amp; Generalization', html:`
+<p class="lede">Some entity sets naturally contain subgroups worth modeling explicitly — entities that share everything the parent set has, plus something extra of their own.</p>
+<div class="two-col">
+<div class="definition"><div class="tag">Specialization — top-down</div><p>Designating subgroupings within an entity set. A <i>person</i> entity set might be specialized into <i>employee</i> and <i>student</i> — each described by all of <i>person</i>'s attributes, plus attributes of its own (<code>salary</code> for employee, <code>tot_cred</code> for student).</p></div>
+<div class="definition"><div class="tag">Generalization — bottom-up</div><p>The reverse process: starting from several entity sets that share conceptually identical attributes, and synthesizing a single higher-level entity set out of the commonality. <i>instructor</i> and <i>secretary</i> might both be generalized upward into <i>employee</i>.</p></div>
+</div>
+<div class="callout good"><div class="tag">Two directions, one outcome</div><p>Specialization and generalization are mirror images of the same idea; an E-R diagram does not distinguish which direction a designer arrived from. The result either way is a <b>superclass</b> entity set (the higher level) and one or more <b>subclass</b> entity sets (the lower level), linked by what is called an <b>ISA</b> relationship — read "is a," as in "an instructor <i>is a(n)</i> employee."</p></div>
+<h2 class="sub-title">Attribute inheritance</h2>
+<p>Lower-level entity sets <b>inherit</b> every attribute of the higher-level entity set above them, all the way up the hierarchy, in addition to their own distinguishing attributes. They also inherit participation in every relationship set the higher-level entity set participates in.</p>
+<div class="example-box"><div class="tag">person &rarr; employee &rarr; instructor</div><p><i>person</i>(ID, name, street, city) &rarr; <i>employee</i> inherits ID, name, street, city and adds salary &rarr; <i>instructor</i> inherits all of the above and adds rank.</p></div>
+<h2 class="sub-title">Disjoint vs. overlapping specialization</h2>
+<div class="two-col">
+<div class="definition"><div class="tag">Disjoint</div><p>An entity belongs to at most one lower-level entity set. <i>instructor</i> and <i>secretary</i> as specializations of <i>employee</i> are disjoint — drawn with a single hollow arrow.</p></div>
+<div class="definition"><div class="tag">Overlapping</div><p>An entity may belong to more than one lower-level entity set at once. <i>student</i> and <i>employee</i> as specializations of <i>person</i> overlap — a person can be both — drawn with two separate hollow arrows.</p></div>
+</div>
+` },
+
+{ type:'theory', eyebrow:'Extended E-R Features', title:'Completeness Constraints & Aggregation', railLabel:'Completeness &amp; Aggregation', html:`
+<h2 class="sub-title">Completeness constraints</h2>
+<p>Beyond disjoint vs. overlapping, a second, independent constraint says whether every higher-level entity is required to belong to some lower-level entity set.</p>
+<div class="two-col">
+<div class="definition"><div class="tag">Total specialization / generalization</div><p>Every entity in the higher-level entity set <b>must</b> belong to at least one lower-level entity set. If the university does not need to represent any person who is neither an instructor nor a student, <i>employee</i>/<i>student</i> is total under <i>person</i>.</p></div>
+<div class="definition"><div class="tag">Partial specialization / generalization</div><p>Some higher-level entities may not belong to any lower-level entity set. This is the default in an E-R diagram unless marked otherwise.</p></div>
+</div>
+<div class="callout good"><div class="tag">Two independent constraints, four combinations</div><p>Disjointness and completeness do not depend on each other, so a specialization may be partial-disjoint, partial-overlapping, total-disjoint, or total-overlapping — all four combinations occur in practice.</p></div>
+<h2 class="sub-title">Aggregation</h2>
+<p>One limitation of the basic E-R model is that it cannot directly express a relationship <i>among relationships</i>. Aggregation is the extension that fixes this: relationship sets are abstracted and treated as higher-level entities in their own right.</p>
+<div class="example-box"><div class="tag">Why it is needed</div><p>Consider the ternary relationship set <i>proj_guide</i>, relating <i>instructor</i>, <i>student</i>, and <i>project</i>. Suppose every guided (student, project, instructor) combination must also produce a monthly <i>evaluation</i> report. A direct quaternary relationship <code>eval_for</code> between all four would work, but it duplicates information already captured by <i>proj_guide</i> — every combination in <code>eval_for</code> must also appear in <code>proj_guide</code>.</p></div>
+<div class="callout good"><div class="tag">The aggregation fix</div><p>Treat <i>proj_guide</i> itself as a single higher-level entity, then create an ordinary binary relationship <code>eval_for</code> between that aggregated entity and <i>evaluation</i>. The redundancy disappears, because there is now exactly one relationship set recording which (student, project, instructor) combination each evaluation belongs to.</p></div>
+` },
+
+{ type:'section', title:'From E-R Diagrams to Relational Schemas', blurb:'The E-R model and the relational model are both abstract, logical representations of the same enterprise — which means every completed E-R diagram can be mechanically reduced into a set of relation schemas, ready to become real tables.', topics:['Strong Entity Sets','Weak Entity Sets','Relationship Sets','Generalization','Redundant &amp; Combined Schemas'] },
+
+{ type:'theory', eyebrow:'E-R &rarr; Relational', title:'Mapping Rules — Entities & Relationships to Tables', railLabel:'Mapping Rules', html:`
+<p class="lede">For each entity set and each relationship set in a completed E-R design, there is a mechanical rule for producing a corresponding relation schema.</p>
+<div class="definition"><div class="tag">Rule 1 &middot; Strong entity set</div><p>A strong entity set E with simple attributes a1&hellip;an becomes a schema E with those same n attributes. The entity set's primary key becomes the schema's primary key. Composite attributes are flattened into their component attributes; the composite attribute itself gets no column. Multivalued attributes are <b>not</b> flattened — each gets its own separate schema instead (Rule 2).</p></div>
+<div class="definition"><div class="tag">Rule 2 &middot; Multivalued attribute</div><p>For a multivalued attribute M on entity set E, create a new relation schema R with an attribute for M and attributes for the primary key of E, with a foreign key from R back to E. Each value the entity has for M becomes one tuple in R.</p></div>
+<div class="definition"><div class="tag">Rule 3 &middot; Weak entity set</div><p>A weak entity set A, dependent on strong entity set B, becomes a schema with one attribute per attribute of A, plus the primary-key attributes of B. The combination of B's primary key and A's discriminator serves as the schema's primary key, with a foreign key back to B.</p></div>
+<div class="definition"><div class="tag">Rule 4 &middot; Relationship set</div><p>A relationship set R becomes a schema with one attribute for each attribute in the union of the primary keys of its participating entity sets, plus one attribute per descriptive attribute of R. A foreign key is created back to each participating entity set. The primary key follows the mapping-cardinality rule covered earlier: both keys for many-to-many, the "many" side's key alone for one-to-many or many-to-one, either side's key for one-to-one.</p></div>
+<div class="callout good"><div class="tag">Two cleanup passes, after the mechanical mapping</div><p>The straightforward application of these four rules can leave <b>redundant</b> schemas (a relationship set linking a weak entity to its owning strong entity duplicates a foreign key already implied by the weak entity's own schema, and can be dropped) and separately, schemas worth <b>combining</b> (a many-to-one relationship with total participation on the "many" side can be merged directly into that side's own schema, eliminating a table with no loss of information).</p></div>
+` },
+
+{ type:'animation', eyebrow:'Worked Scenario · E-R to Relational', title:'Mapping a Small E-R Diagram to Tables, Step by Step', railLabel:'Mapping Walkthrough',
+  intro:'A minimal E-R design — two strong entity sets and one relationship set between them — mapped into relation schemas using the rules just covered.',
+  given:{ items:[
+    {label:'student', value:'(ID, name, tot_cred) — primary key ID'},
+    {label:'section', value:'(course_id, sec_id, semester, year) — primary key: all four'},
+    {label:'takes', value:'many-to-many relationship between student and section, with descriptive attribute grade'}
+  ], question:'Produce the relation schemas for this E-R design.' },
+  steps:[
+    { caption:'Apply Rule 1 to each strong entity set in turn. Every simple attribute becomes a column; the entity set’s primary key becomes the schema’s primary key, unchanged.',
+      panels:[
+        { title:'student', columns:['Column','Key?'], rows:[
+          {cells:['ID','PK'], cls:'match'}, {cells:['name',''], cls:''}, {cells:['tot_cred',''], cls:''}
+        ] },
+        { title:'section', columns:['Column','Key?'], rows:[
+          {cells:['course_id','PK'], cls:'match'}, {cells:['sec_id','PK'], cls:'match'}, {cells:['semester','PK'], cls:'match'}, {cells:['year','PK'], cls:'match'}
+        ] }
+      ] },
+    { caption:'Apply Rule 4 to the relationship set <code>takes</code>. Its schema needs one attribute for each attribute in the union of the two primary keys, plus one for the descriptive attribute <code>grade</code>.',
+      panels:[
+        { title:'takes — columns assembled', tone:'warn', note:'<p>From <code>student</code>: ID<br>From <code>section</code>: course_id, sec_id, semester, year<br>Descriptive: grade</p>' }
+      ] },
+    { caption:'Because <code>takes</code> is many-to-many, neither side’s key alone is enough to identify a relationship instance — the primary key must be the union of both participating primary keys, exactly as the mapping-cardinality rule prescribes.',
+      panels:[
+        { title:'takes', columns:['Column','Key?'], rows:[
+          {cells:['ID','PK (from student)'], cls:'match'},
+          {cells:['course_id','PK (from section)'], cls:'match'},
+          {cells:['sec_id','PK (from section)'], cls:'match'},
+          {cells:['semester','PK (from section)'], cls:'match'},
+          {cells:['year','PK (from section)'], cls:'match'},
+          {cells:['grade','descriptive'], cls:'new'}
+        ] }
+      ] },
+    { caption:'Add the two foreign-key constraints Rule 4 requires — one back to each participating entity set — and the mapping is complete.',
+      panels:[
+        { title:'Foreign keys on takes', tone:'good', note:'<p><code>ID</code> references <code>student</code>(ID)<br><code>(course_id, sec_id, semester, year)</code> references <code>section</code></p>' }
+      ],
+      answer:'<b>Three tables, mechanically derived from the E-R diagram.</b> <code>student</code>(ID, name, tot_cred), <code>section</code>(course_id, sec_id, semester, year), and <code>takes</code>(ID, course_id, sec_id, semester, year, grade) with two foreign keys, each with its key attributes underlined. Every step followed directly from the entity sets, the relationship set, and its many-to-many cardinality — nothing here required a fresh design decision.' }
+  ]
+},
+
+{ type:'theory', eyebrow:'Course Recap', title:'From a Working Definition to a Working Vocabulary', railLabel:'Lecture Recap', html:`
+<p class="lede">This lecture built the vocabulary the rest of the course assumes. A short recap of the arc it followed:</p>
+<ul class="bullets">
+<li><b>Database and DBMS</b> were defined precisely, and set against the wide range of everyday applications already built on top of one.</li>
+<li><b>File-processing systems</b> were shown breaking down in three specific, reproducible ways &mdash; data redundancy causing silent inconsistency, missing atomicity letting a failure leave data half-updated, and uncoordinated concurrent access causing one user's update to be silently lost.</li>
+<li><b>Database architecture</b> traced a single query through the storage manager and query processor, and distinguished the four kinds of people &mdash; naive users, application programmers, sophisticated users, and DBAs &mdash; who interact with a database system in different ways.</li>
+<li><b>Schema and instance</b> separated a database's fixed design from the data living inside it at any one moment.</li>
+<li><b>Data independence</b> showed why that separation matters in practice: a change at the physical level should never force every application built on the logical level to be rewritten.</li>
+<li><b>Data models</b> named the four broad families &mdash; relational, entity-relationship, semi-structured, and object-based &mdash; that any database is built on top of, with the relational model set up as the foundation for everything that follows.</li>
+<li><b>Database languages</b> split into DDL, which defines a schema, and DML, which queries and updates data &mdash; procedurally or declaratively &mdash; with forms-based, graphical, natural-language, and application interfaces standing between most users and those languages entirely.</li>
+<li><b>The entity-relationship model</b> gave a vocabulary for design itself: entities and entity sets, attribute types from simple to derived, and relationship sets with a degree, roles, and sometimes descriptive attributes of their own.</li>
+<li><b>Relationship constraints</b> pinned down exactly how entities associate &mdash; mapping cardinalities from one-to-one through many-to-many, total versus partial participation, keys for relationship sets, and weak entity sets that borrow their identity from a stronger owner.</li>
+<li><b>Generalization, specialization, and aggregation</b> extended the basic model for entities that come in distinguishable subtypes &mdash; with attribute inheritance, disjoint versus overlapping and total versus partial constraints &mdash; and for relationships that themselves need to participate in further relationships.</li>
+<li><b>Mapping rules</b> reduced a completed E-R diagram mechanically into relation schemas &mdash; one rule each for strong entity sets, multivalued attributes, weak entity sets, and relationship sets &mdash; with a cleanup pass to drop redundant schemas and combine others.</li>
+</ul>
+<div class="callout good"><div class="tag">What comes next</div><p>With this vocabulary and design method in place, the course moves on to the relational model and SQL in full detail, and eventually to the theory of functional dependencies and normalization that governs good relational design.</p></div>
+` }
+];
+
+/* ================= RENDER HELPERS ================= */
+function esc(s){ return String(s).replace(/&(?!#?\w+;)/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function fdRow(lhs, rhs, opts){
+  opts = opts || {};
+  var l = lhs.map(function(a){return '<span class="fd-attr">'+esc(a)+'</span>';}).join('');
+  var r = rhs.map(function(a){return '<span class="fd-attr">'+esc(a)+'</span>';}).join('');
+  return '<div class="fd-row"><span class="fd-set">'+l+'</span><span class="fd-arrow">'+(opts.arrow||'&rarr;')+'</span><span class="fd-set">'+r+'</span>'+(opts.note?'<span style="font-family:var(--font-body);color:var(--ink-faint);font-size:12.5px;margin-left:6px;">'+esc(opts.note)+'</span>':'')+'</div>';
+}
+function relCard(name, attrs, keyAttrs, notes){
+  keyAttrs = keyAttrs || [];
+  var attrHtml = attrs.map(function(a){
+    return '<span'+(keyAttrs.indexOf(a)>-1?' class="key"':'')+'>'+esc(a)+'</span>';
+  }).join('');
+  var noteHtml = (notes||[]).map(function(f){ return '<div>'+f+'</div>'; }).join('');
+  return '<div class="rel-card"><div class="rel-head">'+esc(name)+'</div><div class="rel-attrs">'+attrHtml+'</div>'+(noteHtml?'<div class="rel-fds">'+noteHtml+'</div>':'')+'</div>';
+}
+
+function renderPanel(p){
+  if(p.pills){
+    var tone = p.tone ? ' tone-'+p.tone : '';
+    var pillsHtml = p.pills.map(function(pl){
+      var cls='pill'+(pl.active?' active':'')+(pl.newest?' newest':'')+(pl.bad?' bad-pill':'');
+      return '<span class="'+cls+'">'+esc(pl.text)+'</span>';
+    }).join('');
+    return '<div class="panel'+tone+'"><div class="panel-title">'+esc(p.title)+'</div><div class="pill-set">'+pillsHtml+'</div></div>';
+  }
+  if(p.note !== undefined){
+    var tone2 = p.tone ? ' tone-'+p.tone : '';
+    return '<div class="panel'+tone2+'"><div class="panel-title">'+esc(p.title)+'</div><div class="note-body">'+p.note+'</div></div>';
+  }
+  // table panel
+  var cols = p.columns.map(function(c){ return '<th>'+esc(c)+'</th>'; }).join('');
+  var rows = p.rows.map(function(r){
+    var cells = r.cells.map(function(c,i){
+      var ccls = (r.ccls && r.ccls[i]) ? ' class="'+r.ccls[i]+'"' : '';
+      return '<td'+ccls+'>'+c+'</td>';
+    }).join('');
+    return '<tr class="'+(r.cls?('row-'+r.cls):'')+'">'+cells+'</tr>';
+  }).join('');
+  return '<div class="panel"><div class="panel-title">'+esc(p.title)+'</div><table class="ptable"><thead><tr>'+cols+'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function renderGiven(g){
+  if(!g) return '';
+  var items='';
+  (g.items||[]).forEach(function(it){
+    items += '<div class="gi"><b>'+esc(it.label)+'</b><span class="val">'+it.value+'</span></div>';
+  });
+  var q = g.question ? '<div class="question">'+esc(g.question)+'</div>' : '';
+  return '<div class="given-box">'+items+q+'</div>';
+}
+
+/* ================= SLIDE TYPE RENDERERS ================= */
+function renderTitle(s){
+  var meta=(s.meta||[]).map(function(m){return '<div><strong>'+esc(m.k)+'</strong>'+esc(m.v)+'</div>';}).join('');
+  return '<div class="title-slide"><div class="title-rule"></div><p class="eyebrow">'+esc(s.kicker)+'</p>'+
+    '<h1>'+s.title+'</h1><p class="lede">'+s.subtitle+'</p><div class="title-meta">'+meta+'</div></div>';
+}
+function renderSection(s, num){
+  var topics=(s.topics||[]).map(function(t){return '<span>'+esc(t)+'</span>';}).join('');
+  return '<div class="section-slide"><div class="num">'+String(num).padStart(2,'0')+'</div>'+
+    '<div class="label">Part '+num+'</div><h1>'+s.title+'</h1>'+
+    '<p class="blurb">'+s.blurb+'</p><div class="topics">'+topics+'</div></div>';
+}
+function renderTheory(s){
+  return '<p class="eyebrow">'+esc(s.eyebrow)+'</p><h1 class="slide-title">'+s.title+'</h1>'+s.html;
+}
+
+var animState = {}; // slideIdx -> current step
+
+function renderAnimation(s, slideIdx){
+  if(animState[slideIdx]===undefined) animState[slideIdx]=0;
+  var html = '<p class="eyebrow">'+esc(s.eyebrow)+'</p><h1 class="slide-title">'+s.title+'</h1>';
+  if(s.intro) html += '<p class="lede" style="margin-bottom:16px;">'+s.intro+'</p>';
+  html += renderGiven(s.given);
+  html += '<div id="anim-body-'+slideIdx+'"></div>';
+  return html;
+}
+function renderAnimBody(s, slideIdx){
+  var step = animState[slideIdx]||0;
+  var total = s.steps.length;
+  var st = s.steps[step];
+  var dots = s.steps.map(function(_,i){
+    return '<button class="'+(i===step?'active':'')+'" data-goto="'+i+'" aria-label="Step '+(i+1)+'"></button>';
+  }).join('');
+  var panels = (st.panels||[]).map(renderPanel).join('');
+  var html = '';
+  html += '<div class="step-controls">';
+  html += '<button class="navbtn" id="step-prev" '+(step===0?'disabled':'')+'>&larr; Step</button>';
+  html += '<span class="step-counter">Step '+(step+1)+' / '+total+'</span>';
+  html += '<button class="navbtn" id="step-next" '+(step===total-1?'disabled':'')+'>Step &rarr;</button>';
+  html += '<span class="step-dots" style="margin:0 0 0 6px;">'+dots+'</span>';
+  html += '</div>';
+  html += '<div class="caption-strip"><div class="step-badge">'+(step+1)+'</div><div class="txt">'+st.caption+'</div></div>';
+  html += '<div class="panels-wrap">'+panels+'</div>';
+  if(st.answer){
+    html += '<div class="final-answer show'+(st.badAnswer?' bad-answer':'')+'"><div class="tag">'+(st.badAnswer?'Outcome':'Result')+'</div>'+st.answer+'</div>';
+  }
+  return html;
+}
+
+/* ================= DECK ENGINE ================= */
+var stageEl, slideEl, railListEl, phaseLabelEl, slideCountEl, progressFillEl;
+var current = 0;
+var PHASES = [];
+
+function buildPhases(){
+  PHASES = [];
+  SLIDES.forEach(function(s, i){
+    if(s.type==='section'){
+      PHASES.push({ start:i, end:SLIDES.length-1, label:'Part '+(PHASES.length+1)+' · '+stripHtml(s.title) });
+    }
+  });
+  for(var p=0;p<PHASES.length-1;p++){ PHASES[p].end = PHASES[p+1].start - 1; }
+  if(PHASES.length===0){ PHASES.push({start:0,end:SLIDES.length-1,label:''}); }
+  else if(PHASES[0].start>0){ PHASES.unshift({start:0,end:PHASES[0].start-1,label:'Intro'}); }
+}
+function phaseOf(i){
+  for(var p=0;p<PHASES.length;p++){
+    if(i>=PHASES[p].start && i<=PHASES[p].end) return p;
+  }
+  return 0;
+}
+
+function buildRail(){
+  var html='';
+  PHASES.forEach(function(ph, pi){
+    html += '<div class="rail-phase">'+esc(ph.label)+'</div>';
+    for(var i=ph.start;i<=ph.end;i++){
+      var s = SLIDES[i];
+      var title = s.railLabel || s.title || s.label || ('Slide '+(i+1));
+      html += '<button class="rail-item" data-idx="'+i+'"><span class="rail-dot"></span>'+esc(stripHtml(title))+'</button>';
+    }
+  });
+  railListEl.innerHTML = html;
+  railListEl.querySelectorAll('.rail-item').forEach(function(btn){
+    btn.addEventListener('click', function(){ goTo(parseInt(btn.dataset.idx,10)); });
+  });
+}
+function stripHtml(s){ return String(s).replace(/<[^>]*>/g,''); }
+
+function render(){
+  var s = SLIDES[current];
+  var html='';
+  if(s.type==='title') html = renderTitle(s);
+  else if(s.type==='section') html = renderSection(s, PHASES.length ? (phaseOf(current)+ (PHASES[0].label==='Intro'?0:1)) : 1);
+  else if(s.type==='theory') html = renderTheory(s);
+  else if(s.type==='animation') html = renderAnimation(s, current);
+  slideEl.innerHTML = html;
+  if(s.type==='animation'){
+    document.getElementById('anim-body-'+current).innerHTML = renderAnimBody(s, current);
+    wireAnim(s, current);
+  }
+  stageEl.scrollTop = 0;
+
+  // topbar
+  var ph = PHASES[phaseOf(current)];
+  phaseLabelEl.textContent = ph ? ph.label : '';
+  slideCountEl.textContent = (current+1)+' / '+SLIDES.length;
+  progressFillEl.style.width = (((current+1)/SLIDES.length)*100)+'%';
+
+  // rail state
+  railListEl.querySelectorAll('.rail-item').forEach(function(btn){
+    var idx = parseInt(btn.dataset.idx,10);
+    btn.classList.toggle('active', idx===current);
+    btn.classList.toggle('done', idx<current);
+  });
+  var activeBtn = railListEl.querySelector('.rail-item.active');
+  if(activeBtn) activeBtn.scrollIntoView({block:'nearest'});
+
+  document.getElementById('btn-prev').disabled = current===0;
+  document.getElementById('btn-next').disabled = current===SLIDES.length-1;
+  document.getElementById('btn-next').textContent = current===SLIDES.length-1 ? 'End' : 'Next →';
+}
+
+function wireAnim(s, slideIdx){
+  var body = document.getElementById('anim-body-'+slideIdx);
+  function setStep(i){
+    animState[slideIdx] = Math.max(0, Math.min(s.steps.length-1, i));
+    body.innerHTML = renderAnimBody(s, slideIdx);
+    wireAnim(s, slideIdx);
+  }
+  var pv = document.getElementById('step-prev');
+  var nx = document.getElementById('step-next');
+  if(pv) pv.addEventListener('click', function(){ setStep((animState[slideIdx]||0)-1); });
+  if(nx) nx.addEventListener('click', function(){ setStep((animState[slideIdx]||0)+1); });
+  body.querySelectorAll('[data-goto]').forEach(function(btn){
+    btn.addEventListener('click', function(){ setStep(parseInt(btn.dataset.goto,10)); });
+  });
+}
+
+function goTo(i){
+  if(i<0||i>=SLIDES.length) return;
+  current=i; render();
+}
+function next(){
+  var s = SLIDES[current];
+  if(s.type==='animation'){
+    var step = animState[current]||0;
+    if(step < s.steps.length-1){
+      animState[current]=step+1;
+      document.getElementById('anim-body-'+current).innerHTML = renderAnimBody(s, current);
+      wireAnim(s, current);
+      return;
+    }
+  }
+  goTo(current+1);
+}
+function prev(){ goTo(current-1); }
+
+function initTheme(){
+  var btn = document.getElementById('theme-btn');
+  btn.addEventListener('click', function(){
+    var root = document.documentElement;
+    var cur = root.getAttribute('data-theme');
+    var sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var effectiveDark = cur ? cur==='dark' : sysDark;
+    root.setAttribute('data-theme', effectiveDark ? 'light' : 'dark');
+  });
+}
+
+function init(){
+  stageEl = document.getElementById('stage');
+  slideEl = document.getElementById('slide');
+  railListEl = document.getElementById('rail-list');
+  phaseLabelEl = document.getElementById('phase-label');
+  slideCountEl = document.getElementById('slide-count');
+  progressFillEl = document.getElementById('progress-fill');
+
+  buildPhases();
+  buildRail();
+  render();
+  initTheme();
+
+  document.getElementById('btn-prev').addEventListener('click', prev);
+  document.getElementById('btn-next').addEventListener('click', next);
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight' || e.key===' '){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft'){ e.preventDefault(); prev(); }
+    else if(e.key==='Home'){ goTo(0); }
+    else if(e.key==='End'){ goTo(SLIDES.length-1); }
+  });
+}
+init();
+</script>

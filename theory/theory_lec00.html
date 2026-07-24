@@ -1,0 +1,395 @@
+<title>RDBMS Theory (CSC2103) — Course Handout</title>
+<style>
+  :root{
+    --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F3;
+    --ink:#17212B; --ink-soft:#4B5563; --ink-faint:#7C8896;
+    --accent:#21587D; --accent-soft:#DCE7EF; --accent-2:#B5622A; --accent-2-soft:#F3E1D3;
+    --line:#C7CDD6; --line-soft:#DDE2E8;
+    --good:#2E7D4F; --good-soft:#DEEEE3;
+    --font-head:Georgia,"Iowan Old Style","Sitka Text",serif;
+    --font-body:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:Consolas,"SFMono-Regular","Cascadia Mono","Liberation Mono",ui-monospace,Menlo,monospace;
+    /* chart categorical slots — dataviz skill default order, validated for adjacent-pair (stacked-bar) use */
+    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a; --series-4:#eda100;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#10161D; --surface:#161E27; --surface-2:#1D2733;
+      --ink:#E7EAEE; --ink-soft:#9AA7B4; --ink-faint:#6B7684;
+      --accent:#6FA8D6; --accent-soft:#20374A; --accent-2:#E0954F; --accent-2-soft:#3B2A1C;
+      --line:#2C3844; --line-soft:#232E39;
+      --good:#6FBF8B; --good-soft:#1C3327;
+      --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#10161D; --surface:#161E27; --surface-2:#1D2733;
+    --ink:#E7EAEE; --ink-soft:#9AA7B4; --ink-faint:#6B7684;
+    --accent:#6FA8D6; --accent-soft:#20374A; --accent-2:#E0954F; --accent-2-soft:#3B2A1C;
+    --line:#2C3844; --line-soft:#232E39;
+    --good:#6FBF8B; --good-soft:#1C3327;
+    --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500;
+    color-scheme: dark;
+  }
+  :root[data-theme="light"]{
+    --paper:#F4F6F8; --surface:#FFFFFF; --surface-2:#EDF0F3;
+    --ink:#17212B; --ink-soft:#4B5563; --ink-faint:#7C8896;
+    --accent:#21587D; --accent-soft:#DCE7EF; --accent-2:#B5622A; --accent-2-soft:#F3E1D3;
+    --line:#C7CDD6; --line-soft:#DDE2E8;
+    --good:#2E7D4F; --good-soft:#DEEEE3;
+    --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a; --series-4:#eda100;
+    color-scheme: light;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-body);
+    font-size:16px; line-height:1.6;
+  }
+  ::selection{ background:var(--accent-2-soft); }
+  a{ color:var(--accent); }
+  :focus-visible{ outline:2px solid var(--accent-2); outline-offset:2px; }
+  code{ font-family:var(--font-mono); background:var(--surface-2); padding:1.5px 6px; border-radius:4px; font-size:.92em; }
+
+  #shell{ display:grid; grid-template-columns:240px 1fr; max-width:1180px; margin:0 auto; }
+  @media (max-width:860px){ #shell{ grid-template-columns:1fr; } #toc{ display:none; } }
+
+  /* ---------- TOC ---------- */
+  #toc{
+    position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+    padding:28px 14px 40px 0; border-right:1px solid var(--line-soft);
+  }
+  #toc .brand{ font-family:var(--font-head); font-weight:700; font-size:15px; color:var(--accent); padding:0 14px 14px; border-bottom:1px solid var(--line-soft); margin-bottom:10px; }
+  #toc .brand small{ display:block; font-family:var(--font-mono); font-weight:400; font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.4px; margin-top:4px; }
+  #toc nav{ display:flex; flex-direction:column; gap:2px; }
+  #toc a{
+    font-size:12.8px; color:var(--ink-soft); text-decoration:none; padding:6px 14px; border-radius:7px; border-left:2px solid transparent;
+  }
+  #toc a:hover{ background:var(--surface-2); color:var(--ink); }
+  #toc a.active{ background:var(--accent-soft); color:var(--accent); font-weight:600; border-left-color:var(--accent); }
+  #theme-btn{
+    margin:14px 14px 0; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:7px;
+    padding:7px 12px; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:6px; font-family:var(--font-body);
+  }
+
+  /* ---------- Main ---------- */
+  main{ padding:40px 48px 100px; max-width:840px; }
+  @media (max-width:860px){ main{ padding:28px 22px 80px; } }
+
+  .kicker{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:1.2px; font-size:11.5px; color:var(--accent-2); font-weight:600; margin:0 0 10px; }
+  h1{ font-family:var(--font-head); font-size:38px; line-height:1.15; margin:0 0 10px; text-wrap:balance; }
+  .subtitle{ font-size:17px; color:var(--ink-soft); max-width:62ch; margin:0 0 6px; }
+  .rule{ width:64px; height:3px; background:var(--accent-2); margin:22px 0 0; border-radius:2px; }
+
+  section{ margin-top:56px; scroll-margin-top:24px; }
+  h2{ font-family:var(--font-head); font-size:26px; margin:0 0 6px; text-wrap:balance; }
+  h2 .num{ font-family:var(--font-mono); font-size:14px; color:var(--ink-faint); font-weight:400; margin-right:8px; }
+  .section-lede{ font-size:15.5px; color:var(--ink-soft); max-width:65ch; margin:0 0 20px; }
+  h3{ font-family:var(--font-head); font-size:18px; margin:26px 0 10px; }
+
+  /* ---------- Details grid ---------- */
+  .details-grid{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line-soft); border:1px solid var(--line-soft); border-radius:10px; overflow:hidden; margin:18px 0; }
+  @media (max-width:600px){ .details-grid{ grid-template-columns:1fr; } }
+  .details-grid .cell{ background:var(--surface); padding:13px 18px; }
+  .details-grid .cell .k{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink-faint); margin-bottom:3px; }
+  .details-grid .cell .v{ font-size:14.5px; font-weight:600; }
+
+  /* ---------- Cards ---------- */
+  .callout{ border-radius:10px; padding:16px 20px; margin:18px 0; border:1px solid var(--line); background:var(--surface); }
+  .callout.accent{ border-color:var(--accent); background:var(--accent-soft); }
+  .callout .tag{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.8px; font-weight:700; color:var(--accent); margin-bottom:6px; }
+  .card-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; margin:18px 0; }
+  .mini-card{ background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:14px 16px; }
+  .mini-card .mc-title{ font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.4px; margin-bottom:5px; }
+  .mini-card .mc-body{ font-size:13px; color:var(--ink-soft); }
+
+  /* ---------- Tables ---------- */
+  .table-wrap{ overflow-x:auto; margin:18px 0; border:1px solid var(--line-soft); border-radius:10px; }
+  table{ width:100%; border-collapse:collapse; font-size:13.8px; }
+  thead th{ text-align:left; padding:11px 16px; background:var(--accent); color:#fff; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.4px; white-space:nowrap; }
+  tbody td{ padding:10px 16px; border-bottom:1px solid var(--line-soft); vertical-align:top; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:nth-child(even) td{ background:var(--surface-2); }
+  td.num, th.num{ font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+  td.center{ text-align:center; }
+  .lab-topic b{ display:block; }
+  .lab-topic .sub{ color:var(--ink-faint); font-size:12.5px; }
+
+  /* ---------- Assessment chart ---------- */
+  .chart-card{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:24px 26px; margin:20px 0; }
+  .chart-total{ display:flex; align-items:baseline; gap:10px; margin-bottom:18px; }
+  .chart-total .figure{ font-size:40px; font-weight:700; color:var(--ink); font-variant-numeric:normal; }
+  .chart-total .label{ font-size:13.5px; color:var(--ink-faint); }
+  .stack{ display:flex; width:100%; height:40px; border-radius:8px; overflow:hidden; gap:2px; background:var(--paper); }
+  .stack .seg{ display:flex; align-items:center; justify-content:center; font-family:var(--font-body); font-weight:700; font-size:13px; color:#fff; min-width:0; }
+  .stack .seg span{ padding:0 4px; white-space:nowrap; overflow:hidden; text-overflow:clip; }
+  .legend{ display:flex; flex-wrap:wrap; gap:16px 26px; margin-top:16px; }
+  .legend .item{ display:flex; align-items:center; gap:8px; font-size:13.2px; }
+  .legend .swatch{ width:11px; height:11px; border-radius:3px; flex:none; }
+  .legend .item .lv{ font-weight:700; font-variant-numeric:tabular-nums; }
+  .legend .item .ll{ color:var(--ink-soft); }
+
+  /* ---------- Timeline / week strip ---------- */
+  .flow-note{ font-size:13px; color:var(--ink-faint); margin-top:10px; }
+
+  ul.bullets{ margin:12px 0; padding-left:20px; }
+  ul.bullets li{ margin:6px 0; font-size:14.5px; }
+
+  footer{ margin-top:70px; padding-top:22px; border-top:1px solid var(--line-soft); font-size:12.5px; color:var(--ink-faint); }
+
+  @media (prefers-reduced-motion: reduce){ html{ scroll-behavior:auto; } }
+</style>
+
+<div id="shell">
+  <aside id="toc">
+    <div class="brand">RDBMS Theory Handout<small>CSC2103 &middot; Manipal University Jaipur</small></div>
+    <nav id="toc-nav">
+      <a href="#overview">Course at a Glance</a>
+      <a href="#evaluation">How You Are Evaluated</a>
+      <a href="#outcomes">Course Outcomes</a>
+      <a href="#syllabus">Syllabus</a>
+      <a href="#schedule">Lecture Plan</a>
+      <a href="#beyond">Beyond the Classroom</a>
+      <a href="#resources">Textbooks &amp; References</a>
+    </nav>
+    <button id="theme-btn" title="Toggle theme" aria-label="Toggle theme">&#9680; Toggle theme</button>
+  </aside>
+
+  <main>
+    <p class="kicker">Course Hand-out &middot; CSC2103</p>
+    <h1>RDBMS Theory — Syllabus &amp; Evaluation, in Plain Terms</h1>
+    <p class="subtitle">Everything in the official course hand-out that actually changes what you do week to week: how your final mark is built, what each block of the syllabus covers, and what is expected of you outside scheduled hours.</p>
+    <div class="rule"></div>
+
+    <section id="overview">
+      <h2><span class="num">01</span>Course at a Glance</h2>
+      <p class="section-lede">The essentials, straight from the official hand-out.</p>
+      <div class="details-grid">
+        <div class="cell"><div class="k">Course Name</div><div class="v">Relational Database Management Systems</div></div>
+        <div class="cell"><div class="k">Course Code</div><div class="v">CSC2103</div></div>
+        <div class="cell"><div class="k">Programme</div><div class="v">B. Tech. (CSE), Semester III</div></div>
+        <div class="cell"><div class="k">Structure (L-T-P-C)</div><div class="v">3 Lecture &middot; 1 Tutorial &middot; 0 Practical &middot; 4 Credits</div></div>
+        <div class="cell"><div class="k">Session</div><div class="v">July – November 2026</div></div>
+        <div class="cell"><div class="k">Course Coordinators</div><div class="v">Dr. Satyabrata Roy, Mr. Lav Upadhyay</div></div>
+      </div>
+      <div class="callout">
+        <div class="tag">What this course is for</div>
+        <p style="margin:0;font-size:14.5px;">A core course that introduces the principles of designing, implementing, and managing modern database systems. It covers database concepts, data models, Entity-Relationship modelling, relational schema design, normalization, and SQL for efficient data definition, manipulation, and retrieval, then extends into transactions, concurrency control, recovery, indexing, distributed databases, and emerging NoSQL systems. By the end, you should be able to design normalized databases, develop efficient SQL queries, and reason about reliable, secure, and scalable database solutions.</p>
+      </div>
+    </section>
+
+    <section id="evaluation">
+      <h2><span class="num">02</span>How You Are Evaluated</h2>
+      <p class="section-lede">Your final mark out of 100 is built from two broad components. Internal Assessment (60 marks total) is earned continuously through the semester across five separate instruments; the End Term Exam (40 marks) is a single closed-book assessment at the end.</p>
+
+      <div class="chart-card">
+        <div class="chart-total"><span class="figure">100</span><span class="label">total marks, split across internal assessment and the end term exam</span></div>
+        <div class="stack" role="img" aria-label="Assessment breakdown: Mid-Term Examination 30, Quizzes plus Assignments plus Attendance 20, MOOC Certificates 10, End Term Exam 40">
+          <div class="seg" style="background:var(--series-1); flex:30;"><span>30</span></div>
+          <div class="seg" style="background:var(--series-2); flex:20;"><span>20</span></div>
+          <div class="seg" style="background:var(--series-3); flex:10;"><span>10</span></div>
+          <div class="seg" style="background:var(--series-4); flex:40;"><span>40</span></div>
+        </div>
+        <div class="legend">
+          <div class="item"><span class="swatch" style="background:var(--series-1);"></span><span class="lv">30</span>&nbsp;<span class="ll">Mid-Term Examination (closed book)</span></div>
+          <div class="item"><span class="swatch" style="background:var(--series-2);"></span><span class="lv">20</span>&nbsp;<span class="ll">Quizzes, Assignments &amp; Attendance</span></div>
+          <div class="item"><span class="swatch" style="background:var(--series-3);"></span><span class="lv">10</span>&nbsp;<span class="ll">MOOC Certificates</span></div>
+          <div class="item"><span class="swatch" style="background:var(--series-4);"></span><span class="lv">40</span>&nbsp;<span class="ll">End Term Exam (closed book)</span></div>
+        </div>
+        <p class="flow-note">Internal Assessment accounts for 60 of the 100 marks &mdash; more than half your grade is earned before the End Term Exam even happens.</p>
+      </div>
+
+      <h3>Mid-Term Examination — 30 marks</h3>
+      <p style="font-size:14.5px;">A closed-book examination covering the syllabus taught up to that point in the semester. This is the single largest internal component, so treat it as a genuine checkpoint rather than a formality.</p>
+
+      <h3>Quizzes, Assignments &amp; Attendance — 20 marks</h3>
+      <div class="card-grid">
+        <div class="mini-card"><div class="mc-title">Online Quizzes</div><div class="mc-body">Two quizzes, one before the Mid-Term and one after &mdash; 4 marks each, 8 marks total.</div></div>
+        <div class="mini-card"><div class="mc-title">Regular Assignments</div><div class="mc-body">Two assignments, one before the Mid-Term (4 marks) and one after (3 marks) &mdash; 7 marks total.</div></div>
+        <div class="mini-card"><div class="mc-title">Attendance</div><div class="mc-body">Scored on a rubric tied to your attendance percentage &mdash; up to 5 marks.</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Attendance</th><th class="num">Marks</th></tr></thead>
+          <tbody>
+            <tr><td>85% – 100%</td><td class="num">5</td></tr>
+            <tr><td>80% – 84%</td><td class="num">4</td></tr>
+            <tr><td>77% – 79%</td><td class="num">3</td></tr>
+            <tr><td>75% – 76%</td><td class="num">2</td></tr>
+            <tr><td>Below 75%</td><td class="num">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="flow-note">8 (quizzes) + 7 (assignments) + 5 (attendance) = 20 marks. Attendance below 75% costs the full 5 marks on top of any eligibility rules the university applies separately.</p>
+
+      <h3>MOOC Certificates — 10 marks</h3>
+      <p style="font-size:14.5px;">Two certifications, 5 marks each: an Oracle Academy "Database Foundations" (OA DFO) certificate and a Database Design certificate. Both are external and self-paced &mdash; worth starting early rather than leaving until they compete with Mid-Term or End Term preparation.</p>
+
+      <h3>End Term Exam — 40 marks</h3>
+      <p style="font-size:14.5px;">A single closed-book summative assessment covering the full syllabus. It is the only component not distributed across the semester, so the Mid-Term, quizzes, and assignments are worth treating as genuine preparation for it rather than separate, disposable tasks.</p>
+    </section>
+
+    <section id="outcomes">
+      <h2><span class="num">03</span>Course Outcomes</h2>
+      <p class="section-lede">What you should be able to <em>do</em> by the end of the course — each outcome is what a specific stretch of the syllabus is building toward.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:70px;">CO</th><th>By the end of this course, you will be able to&hellip;</th></tr></thead>
+          <tbody>
+            <tr><td><code>CSC2103.1</code></td><td>Explain the fundamental concepts and architecture of database systems and differentiate between data models and their use in designing schemas.</td></tr>
+            <tr><td><code>CSC2103.2</code></td><td>Identify Entity-Relationship modelling concepts, map ER diagrams to relational models, and apply the design principles to solve real-world problems.</td></tr>
+            <tr><td><code>CSC2103.3</code></td><td>Solve queries using formal query languages such as Relational Algebra and SQL for effective data retrieval.</td></tr>
+            <tr><td><code>CSC2103.4</code></td><td>Apply normalization techniques and utilize normal forms to refine database schemas for consistency and efficiency.</td></tr>
+            <tr><td><code>CSC2103.5</code></td><td>Apply concepts of transaction, concurrency control, and recovery in databases.</td></tr>
+            <tr><td><code>CSC2103.6</code></td><td>Explain the fundamental concepts of database storage and indexing and illustrate emerging trends in non-relational models.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="syllabus">
+      <h2><span class="num">04</span>Syllabus</h2>
+      <p class="section-lede">One continuous arc, from modeling data to keeping it consistent, fast, and recoverable under concurrent use.</p>
+      <div class="card-grid">
+        <div class="mini-card"><div class="mc-title">Foundations &amp; ER Model</div><div class="mc-body">Database concepts, file system vs. database system, applications, architecture &amp; users, schema &amp; instance, data independence, data models; entities, attributes, relationships, generalization, specialization, aggregation, mapping ER diagrams to relational schemas.</div></div>
+        <div class="mini-card"><div class="mc-title">Relational Model &amp; SQL</div><div class="mc-body">Schema, attributes, domains, keys, integrity constraints; relational algebra (set, unary, binary operations); SQL DDL, DML, DCL, joins, subqueries, views, aggregations.</div></div>
+        <div class="mini-card"><div class="mc-title">Advanced SQL</div><div class="mc-body">Triggers, cursors, indexing, stored procedures.</div></div>
+        <div class="mini-card"><div class="mc-title">Database Design &amp; Normalization</div><div class="mc-body">Functional dependencies, Armstrong's Axioms, normal forms, lossless join, dependency preservation, multivalued &amp; join dependencies, normalized tables.</div></div>
+        <div class="mini-card"><div class="mc-title">Transactions &amp; Concurrency</div><div class="mc-body">Transaction concepts, ACID properties, serializability, schedules; log-based recovery, checkpoints; lock-based protocols, timestamp ordering, deadlock handling, distributed &amp; parallel databases.</div></div>
+        <div class="mini-card"><div class="mc-title">Storage &amp; Emerging Models</div><div class="mc-body">File organization, indexing techniques, hashing, multilevel indexing with B-Trees and B+ Trees, RAID concepts.</div></div>
+        <div class="mini-card"><div class="mc-title">Industry Tools &amp; Case Studies</div><div class="mc-body">Overview of tools such as Oracle and MySQL, and NoSQL platforms, with relevant case studies.</div></div>
+      </div>
+    </section>
+
+    <section id="schedule">
+      <h2><span class="num">05</span>Lecture Plan</h2>
+      <p class="section-lede">All 48 lectures, exactly as listed in the official hand-out. Topics marked with &#9733; are earmarked for an Industry Fellow, Visiting Faculty, or Adjunct Faculty rather than the regular course instructor.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:40px;">No.</th><th>Topic</th><th>Session Outcome</th><th style="width:100px;">CO</th><th style="width:160px;">Mode of Delivery</th><th style="width:190px;">Mode of Assessing CO</th></tr></thead>
+          <tbody>
+            <tr><td class="center">1</td><td>Introduction &amp; Significance of RDBMS Course</td><td>Identify the basic concepts of Relational Database Management System</td><td><code>CSC2103.1</code></td><td>Lecture based teaching-learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">2</td><td>DBMS Concepts, Schema &amp; Instance</td><td>Identify the basic concepts of Relational Database Management System</td><td><code>CSC2103.1</code></td><td>Lecture based teaching-learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">3</td><td>Database System vs. File System</td><td>Identify the differences between DB System &amp; Traditional File System</td><td><code>CSC2103.1</code></td><td>Lecture based teaching-learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">4</td><td>Data Models, Schema Architecture</td><td>Compare various data models used in database design</td><td><code>CSC2103.1</code></td><td>Lecture based teaching-learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">5</td><td>Data Independence, Database Languages &amp; Interfaces</td><td>Data independence, database languages, and interfaces</td><td><code>CSC2103.1</code></td><td>Lecture based teaching-learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">6</td><td>Database System Applications, Database Users, Functions of DBA</td><td>Database system applications, database users, functions of DBA</td><td><code>CSC2103.1</code></td><td>Lecture based teaching-learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">7</td><td>ER Model Concepts, Entities, Attributes, Relationship &amp; Types</td><td>Identify the Entity Relationship modelling concepts</td><td><code>CSC2103.1</code>, <code>.2</code></td><td>Technology based learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">8</td><td>Relationship Constraints</td><td>Identify the Entity Relationship modelling &amp; relationship constraints</td><td><code>CSC2103.1</code>, <code>.2</code></td><td>Technology based learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">9</td><td>ER Diagram Examples</td><td>Use data modeling to architect a relational database</td><td><code>CSC2103.2</code></td><td>Technology based learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">10</td><td>Concept Generalization, Specialization and Aggregation</td><td>Identify the Extended Entity Relationship modelling concepts</td><td><code>CSC2103.1</code>, <code>.2</code></td><td>Technology based learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">11</td><td>Transforming ER Diagram into the Tables</td><td>Mapping to relational models</td><td><code>CSC2103.1</code>, <code>.2</code></td><td>Learning through problem solving</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">12</td><td>Relational Data Models: Domains, Tuples, Attributes, Relations, Characteristics of Relations, Keys, Key Attributes</td><td>Describe the purpose of a relational database</td><td><code>CSC2103.1</code>, <code>.2</code></td><td>Technology based learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">13</td><td>Relational Database, Schemas, Integrity Constraints, Referential Integrity</td><td>Describe the purpose of a relational database</td><td><code>CSC2103.2</code></td><td>Group-teaching and learning</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">14</td><td>Relational Algebra Operators &mdash; Unary, Binary, Set Operations</td><td>Analyze various relational formal query languages</td><td><code>CSC2103.3</code></td><td>Learning through problem solving</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">15</td><td>Relational Algebra Operators &mdash; Unary, Binary, Set Operations</td><td>Analyze various relational formal query languages</td><td><code>CSC2103.3</code></td><td>Learning through problem solving</td><td>Mid-Term, Class Test 1, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">16</td><td>SQL: Basic SQL Query, Creating Table and Views, SQL as DML, DDL and DCL</td><td>Write, execute, and save SQL statements in Oracle Application Express</td><td><code>CSC2103.3</code></td><td>Technology based learning</td><td>Mid-Term, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">17</td><td>SQL: Joins</td><td>Write, execute, and save SQL JOIN statements in Oracle Application Express</td><td><code>CSC2103.3</code></td><td>Technology based learning</td><td>Mid-Term, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">18</td><td>SQL: Sub-Queries</td><td>Write, execute, and save SQL sub-query statements in Oracle Application Express</td><td><code>CSC2103.3</code></td><td>Technology based learning</td><td>Mid-Term, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">19</td><td>SQL: Aggregate Operations, Cursors</td><td>Write, execute, and save SQL aggregate operations and cursor statements in Oracle Application Express</td><td><code>CSC2103.3</code></td><td>Technology based learning</td><td>Mid-Term, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">20</td><td>SQL: Dynamic SQL</td><td>Write, execute, and save dynamic SQL statements in Oracle Application Express</td><td><code>CSC2103.3</code></td><td>Expeditionary learning</td><td>Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">21</td><td>SQL: Integrity Constraints in SQL</td><td>Write, execute, and save integrity-constraint SQL statements in Oracle Application Express</td><td><code>CSC2103.3</code></td><td>Expeditionary learning</td><td>Mid-Term, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">22</td><td>SQL: Triggers</td><td>Write, execute, and save SQL trigger statements in Oracle Application Express</td><td><code>CSC2103.3</code></td><td>Expeditionary learning</td><td>Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">23</td><td>Database Design: Armstrong&#39;s Axioms</td><td>Recognize the use of normalization in database design and apply normal forms to carry out schema refinement</td><td><code>CSC2103.4</code></td><td>Lecture based teaching-learning</td><td>Mid-Term, Class Test 2, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">24</td><td>Database Design: Canonical Cover, Lossless Join &amp; Dependency Preservation</td><td>Recognize the use of normalization in database design and apply normal forms to carry out schema refinement</td><td><code>CSC2103.4</code></td><td>Learning through problem solving</td><td>Mid-Term, Class Test 2, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">25</td><td>Database Design: Problems with Null-Valued and Dangling Tuples</td><td>Recognize the use of normalization in database design and apply normal forms to carry out schema refinement</td><td><code>CSC2103.4</code></td><td>Learning through problem solving</td><td>Mid-Term, Class Test 2, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">26</td><td>Database Design: 1NF and 2NF</td><td>Recognize the use of normalization in database design and apply normal forms to carry out schema refinement</td><td><code>CSC2103.4</code></td><td>Learning through problem solving</td><td>Mid-Term, Class Test 2, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">27</td><td>Database Design: 3NF and BCNF</td><td>Understand the use of Armstrong&#39;s Axioms for functional dependency</td><td><code>CSC2103.3</code></td><td>Learning through problem solving</td><td>Class Test 2, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">28</td><td>Database Design: Multivalued Dependencies and 4NF</td><td>Understand the decomposition properties</td><td><code>CSC2103.4</code></td><td>Learning through problem solving</td><td>Class Test 2, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">29</td><td>Database Design: Problems with Null-Valued and Dangling Tuples</td><td>Understand the decomposition properties</td><td><code>CSC2103.4</code></td><td>Inquiry based learning</td><td>Class Test 2, Assignment 1 &amp; End Term</td></tr>
+            <tr><td class="center">30</td><td>Transaction Processing Concepts: Transaction Properties &amp; States&#9733;</td><td>Apply and relate the concept of transaction, concurrency control and recovery in database</td><td><code>CSC2103.4</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">31</td><td>Transaction Processing Concepts: Schedules, Serial &amp; Concurrent Schedule&#9733;</td><td>Apply and relate the concept of transaction, concurrency control and recovery in database</td><td><code>CSC2103.4</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">32</td><td>Transaction Processing Concepts: Serializability of Schedules, Conflict &amp; View Serializable Schedule</td><td>Apply and relate the concept of transaction, concurrency control and recovery in database</td><td><code>CSC2103.5</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">33</td><td>Transaction Processing Concepts: Serializability of Schedules, Conflict &amp; View Serializable Schedule</td><td>Understand the concept of serializability</td><td><code>CSC2103.5</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">34</td><td>Transaction Processing Concepts: Recoverability, Recovery from Transaction Failures, Log-Based Recovery, Checkpoints</td><td>Understand the concept of recoverability</td><td><code>CSC2103.5</code></td><td>Learning through problem solving</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">35</td><td>Transaction Processing Concepts: Deadlock Handling</td><td>Understand the concept of deadlock handling</td><td><code>CSC2103.5</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">36</td><td>Concurrency Control Techniques: Concurrency Control, Concept of Locks&#9733;</td><td>Apply and relate the concept of concurrency control in database</td><td><code>CSC2103.5</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">37</td><td>Concurrency Control Techniques: Concurrency Control Protocols &mdash; Two-Phase Locking Protocol&#9733;</td><td>Apply and relate the concept of concurrency control in database</td><td><code>CSC2103.5</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">38</td><td>Concurrency Control Techniques: Time Stamping Protocol&#9733;</td><td>Apply and relate the concept of concurrency control in database</td><td><code>CSC2103.5</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">39</td><td>Concurrency Control Techniques: Validation-Based Protocol, Multiple Granularities&#9733;</td><td>Apply and relate the concept of concurrency control in database</td><td><code>CSC2103.5</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">40</td><td>Concurrency Control Techniques: Multiversion Schemes&#9733;</td><td>Apply and relate the concept of concurrency control in database</td><td><code>CSC2103.5</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">41</td><td>Concurrency Control Techniques: Recovery with Concurrent Transactions&#9733;</td><td>Apply and relate the concept of concurrency control in database</td><td><code>CSC2103.5</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">42</td><td>Concurrency Control Techniques: Examples&#9733;</td><td>Apply and relate the concept of concurrency control in database</td><td><code>CSC2103.5</code></td><td>Lecture based teaching-learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">43</td><td>File Structures: File Organization</td><td>Explain the database file storage structures and access techniques</td><td><code>CSC2103.6</code></td><td>Individual learning / self-study</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">44</td><td>File Structures: Indexing &mdash; Primary, Clustered, Secondary Indexes</td><td>Explain different types of indexing schemes</td><td><code>CSC2103.6</code></td><td>Individual learning / self-study</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">45</td><td>File Structures: Hashing</td><td>Understand the concept of hashing</td><td><code>CSC2103.6</code></td><td>Individual learning / self-study</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">46</td><td>File Structures: Multilevel Indexing with B-Tree &amp; B+ Tree</td><td>Understand the concepts of indexing using B-trees</td><td><code>CSC2103.6</code></td><td>Group-teaching and learning</td><td>Assignment 2 &amp; End Term</td></tr>
+            <tr><td class="center">47</td><td colspan="5">Revision of Entire Syllabus</td></tr>
+            <tr><td class="center">48</td><td colspan="5">Revision of Entire Syllabus</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="flow-note">Nine sessions inside Transaction Processing and Concurrency Control (Lectures 30&ndash;31 and 36&ndash;42) are earmarked for an Industry Fellow, Visiting Faculty, or Adjunct Faculty. Every lecture builds toward the Mid-Term or the End Term Exam &mdash; there is no separate "exam syllabus" distinct from what is taught in class.</p>
+    </section>
+
+    <section id="beyond">
+      <h2><span class="num">06</span>Beyond the Classroom</h2>
+      <p class="section-lede">Regulatory guidelines require 30 notional hours of engagement per credit outside scheduled sessions. For this 4-credit course, that is met through activities like these &mdash; none of them separately graded, all of them directly useful for the Mid-Term, quizzes, assignments, and MOOC components above.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Activity</th><th style="width:110px;">Level</th><th style="width:100px;" class="num">Hours</th></tr></thead>
+          <tbody>
+            <tr><td>Participating in academic clubs, technical competitions, or seminars</td><td>Medium</td><td class="num">10</td></tr>
+            <tr><td>Mini research projects, project documentation, or presentations</td><td>High</td><td class="num">6</td></tr>
+            <tr><td>One-on-one remedial sessions, tutorials, or simplified handouts</td><td>Low</td><td class="num">4</td></tr>
+            <tr><td>Visiting laboratories or project labs for extended hands-on database practice</td><td>Medium</td><td class="num">4</td></tr>
+            <tr><td>Exploring relevant online courses, MOOCs, or certification programs (Oracle, NPTEL)</td><td>Medium</td><td class="num">2</td></tr>
+            <tr><td>Participation in hackathons or innovation challenges</td><td>High</td><td class="num">2</td></tr>
+            <tr><td>Group study circles or peer-assisted learning for SQL/DML/PL-SQL assignments and case studies</td><td>Medium</td><td class="num">2</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="bullets">
+        <li>Struggling with the basics? One-on-one remedial sessions or tutorials on SQL basics and ER diagram concepts, and peer-assisted debugging of DDL/DML queries, are explicitly built into the course design &mdash; use them early rather than after a Mid-Term or quiz goes badly.</li>
+        <li>Want to go further? Mini research projects or presentations on advanced topics such as normalization, indexing, or NoSQL vs. RDBMS, and participation in technical clubs, hackathons, or coding competitions involving database design, are the high-difficulty track the hand-out calls out by name.</li>
+      </ul>
+    </section>
+
+    <section id="resources">
+      <h2><span class="num">07</span>Textbooks &amp; References</h2>
+      <h3>Text Books</h3>
+      <ul class="bullets">
+        <li>Silberschatz, A., Korth, H. F., &amp; Sudarshan, S., <em>Database System Concepts</em>, 7th ed., McGraw Hill Education, 2021.</li>
+        <li>Elmasri, R., &amp; Navathe, S. B., <em>Fundamentals of Database Systems</em>, 7th ed., Pearson Education, 2017.</li>
+      </ul>
+      <h3>Reference Books</h3>
+      <ul class="bullets">
+        <li>Alan Beaulieu, <em>Learning SQL: Generate, Manipulate, and Retrieve Data</em>, 3rd ed. (Greyscale Indian Edition), O'Reilly Media, 2020.</li>
+        <li>Sadalage, P. J., &amp; Fowler, M., <em>NoSQL Distilled: A Brief Guide to the Emerging World of Polyglot Persistence</em>, Addison-Wesley, 2012.</li>
+        <li>I. Bayross, <em>SQL, PL/SQL</em>, 4th ed., BPB Publications, 2025.</li>
+        <li>C. J. Date, <em>Database Systems</em>, Prentice Hall of India, New Delhi, 2022.</li>
+      </ul>
+    </section>
+
+    <footer>Course Hand-out, Department of Computer Science and Engineering, Manipal University Jaipur &middot; CSC2103 &middot; July&ndash;November 2026 session.</footer>
+  </main>
+</div>
+
+<script>
+  (function(){
+    var btn = document.getElementById('theme-btn');
+    btn.addEventListener('click', function(){
+      var root = document.documentElement;
+      var cur = root.getAttribute('data-theme');
+      var sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var effectiveDark = cur ? cur==='dark' : sysDark;
+      root.setAttribute('data-theme', effectiveDark ? 'light' : 'dark');
+    });
+
+    var links = Array.prototype.slice.call(document.querySelectorAll('#toc-nav a'));
+    var sections = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+    function onScroll(){
+      var pos = window.scrollY + 100;
+      var activeIdx = 0;
+      sections.forEach(function(sec, i){
+        if(sec && sec.offsetTop <= pos) activeIdx = i;
+      });
+      links.forEach(function(a, i){ a.classList.toggle('active', i===activeIdx); });
+    }
+    document.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
+  })();
+</script>
